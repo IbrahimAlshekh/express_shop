@@ -1,20 +1,32 @@
 class Product {
     constructor() {
-        console.log('Product model')
-        this.db = require('./database').db();
-        this.createTable();
+        this.db = require('../database/database').db();
     }
 
     createTable() {
-        const sql = `
-            CREATE TABLE IF NOT EXISTS products
+        console.log('Creating product table...')
+        const productsTableSql = `
+            CREATE TABLE IF NOT EXISTS "products"
             (
-                id    INTEGER PRIMARY KEY AUTOINCREMENT,
-                name  TEXT,
-                price INTEGER
-            )
+                "id"          int,
+                "name"        string,
+                "description" string,
+                "price"       float,
+                "thumnail"    string
+            );
         `;
-        this.db.run(sql);
+        const productImagesTableSql = `
+            CREATE TABLE IF NOT EXISTS "product_images"
+            (
+                "id"         int,
+                "name"       string,
+                "image"      string,
+                "product_id" int,
+                FOREIGN KEY("product_id") REFERENCES products("id")
+            );
+        `;
+        this.db.run(productsTableSql);
+        this.db.run(productImagesTableSql);
         this.db.close();
     }
 }
