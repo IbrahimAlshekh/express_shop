@@ -1,0 +1,67 @@
+<%- include('layouts/main/header') %>
+<img src="/images/hero.png" class="img-fluid rounded-bottom-4 shadow-sm object-fit-cover w-100">
+<div class="row row-cols-4 p-4">
+    <div class="d-flex p-2">
+        <img class="img-thumbnail h-50 shadow-sm" src="/images/img_7.png" alt="">
+        <div class="px-2">
+            <h1 class="fs-6">Drawing boards</h1>
+            <p>Lorem ipsum dolor si, consectetur adipisicing elit. Sunt, ullam!</p>
+        </div>
+    </div>
+    <div class="d-flex p-2">
+        <img class="img-thumbnail h-50 shadow-sm" src="/images/img_8.png" alt="">
+        <div class="px-2">
+            <h1 class="fs-6">Decorative antiques</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+        </div>
+    </div>
+    <div class="d-flex p-2">
+        <img class="img-thumbnail h-50 shadow-sm" src="/images/img_9.png" alt="">
+        <div class="px-2">
+            <h1 class="fs-6">Artifacts made of stone</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quod!</p>
+        </div>
+    </div>
+    <div class="d-flex p-2">
+        <img class="img-thumbnail h-50 shadow-sm" src="/images/img_10.png" alt="">
+        <div class="px-2">
+            <h1 class="fs-6">Planting pot</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur.</p>
+        </div>
+    </div>
+</div>
+<div class="d-flex p-2">
+    <div>
+        <h1>Lorem ipsum dolor sit amet, consectetur.</h1>
+        <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam esse, hic maiores natus nulla quae
+            quis tenetur voluptatum. Amet aperiam autem libero non qui sapiente tempora ut voluptates voluptatibus.
+            Blanditiis delectus ex impedit labore necessitatibus officiis porro repellat suscipit totam.
+        </div>
+    </div>
+    <img class="w-50 rounded mx-4 shadow-md" src="/images/img_1.png" style="height: 250px" alt="">
+</div>
+<div class="d-flex p-2">
+    <img class="w-50 rounded mx-4 shadow-md" src="/images/img_2.png" style="height: 200px;" alt="">
+    <div>
+        <h1>Lorem ipsum dolor sit amet, consectetur.</h1>
+        <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam esse, hic maiores natus nulla quae
+            quis tenetur voluptatum. Amet aperiam autem libero non qui sapiente tempora ut voluptates voluptatibus.
+            Blanditiis delectus ex impedit labore necessitatibus officiis porro repellat suscipit totam.
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa dolore eos fugit inventore iusto odio sed
+            tenetur! Consectetur distinctio eius excepturi. Consectetur consequatur doloribus error explicabo facilis
+            incidunt quam vitae.
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores consequuntur debitis dicta, doloribus
+            inventore ipsa ipsam libero natus nostrum perspiciatis possimus quos reprehenderit sequi similique sint sit
+            veniam, voluptate voluptatum.
+        </div>
+    </div>
+</div>
+<% if (products.length > 0){ %>
+<h1 class="w-100 text-center p-4 border-bottom border-body-secondary">FEATURED PRODUCTS</h1>
+<div class="row row-cols-5 justify-content-center">
+    <% products.forEach(function (product){ %>
+    <%- include('shop/includes/product_list_item.html', {product:product}) %>
+    <% }); %>
+</div>
+<% } %>
+<%- include('layouts/main/footer') %>

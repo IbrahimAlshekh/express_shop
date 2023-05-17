@@ -1,0 +1,16 @@
+<%- include('../layouts/main/header', {title: 'Results'}) %>
+<% if (products.length > 0){ %>
+<div class="p-2">
+    <h1 class="w-100 text-center p-4 border-bottom border-body-secondary">Search results</h1>
+    <div class="row row-cols-6">
+        <% products.forEach(function (product){ %>
+        <%- include('shop/includes/product_list_item.html', {product:product}) %>
+        <% }); %>
+    </div>
+</div>
+<% }else{ %>
+<div class="alert alert-info py-4 my-4" role="alert">
+    There are no products yet.
+</div>
+<% } %>
+<%- include('../layouts/main/footer') %>
