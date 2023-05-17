@@ -8,7 +8,7 @@ class Cart {
         const cartsTableSql = `
             CREATE TABLE IF NOT EXISTS "carts"
             (
-                "int"     id,
+                "id"     int,
                 "user_id" int,
                 FOREIGN KEY("user_id") REFERENCES users("id")
             );
