@@ -29,6 +29,9 @@ class Product {
         this.db.run(productImagesTableSql);
         this.db.close();
     }
+    getAll() {
+        return []
+    }
 }
 
 module.exports = Product;
