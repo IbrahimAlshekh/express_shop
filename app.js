@@ -14,6 +14,8 @@ const app = express();
 
 app.use(function (req, res, next) {
   res.locals = {
+    error: null,
+    success: null,
     siteTitle: "Express Shop",
     cart_count: 5,
   };

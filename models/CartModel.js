@@ -1,19 +1,20 @@
-class Cart {
+class CartModel {
     constructor() {
         this.db = require('../database/database').db();
     }
 
     createTable() {
         console.log('Creating cart table...');
-        const cartsTableSql = `
+        const cartsTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "carts"
             (
                 "id"     int,
                 "user_id" int,
                 FOREIGN KEY("user_id") REFERENCES users("id")
             );
-        `;
-        const cartItemsTableSql = `
+        `);
+        cartsTableStatement.run();
+        const cartItemsTableSql = this.db.prepare(`
         CREATE TABLE IF NOT EXISTS "cart_items"
             (
                 "id"         int,
@@ -24,11 +25,9 @@ class Cart {
                 FOREIGN KEY("product_id") REFERENCES products("id"),
                 FOREIGN KEY("cart_id") REFERENCES carts("id")
             );
-        `;
-        this.db.run(cartsTableSql);
-        this.db.run(cartItemsTableSql);
-        this.db.close();
+        `);
+        cartItemsTableSql.run();
     }
 }
 
-module.exports = Cart;
+module.exports = CartModel;

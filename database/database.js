@@ -1,5 +1,5 @@
 const sqlite3 = require('sqlite3');
-const {User, Product, Order, Cart} = require("../models");
+const Models = require("../models");
 
 const db = () => {
     return new sqlite3.Database('./db.sqlite3', (err) => {
@@ -12,10 +12,10 @@ const db = () => {
 }
 
 const instantiateDB = () => {
-    const user = new User();
-    const product = new Product();
-    const order = new Order();
-    const cart = new Cart();
+    const user = new Models.UserModel();
+    const product = new Models.ProductModel();
+    const order = new Models.OrderModel();
+    const cart = new Models.CartModel();
 
     user.createTable();
     product.createTable();

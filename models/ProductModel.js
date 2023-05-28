@@ -1,11 +1,11 @@
-class Product {
+class ProductModel {
     constructor() {
         this.db = require('../database/database').db();
     }
 
     createTable() {
         console.log('Creating product table...')
-        const productsTableSql = `
+        const productsTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "products"
             (
                 "id"          int,
@@ -14,8 +14,9 @@ class Product {
                 "price"       float,
                 "thumnail"    string
             );
-        `;
-        const productImagesTableSql = `
+        `);
+
+        const productImagesTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "product_images"
             (
                 "id"         int,
@@ -24,14 +25,13 @@ class Product {
                 "product_id" int,
                 FOREIGN KEY("product_id") REFERENCES products("id")
             );
-        `;
-        this.db.run(productsTableSql);
-        this.db.run(productImagesTableSql);
-        this.db.close();
+        `);
+        productsTableStatement.run();
+        productImagesTableStatement.run();
     }
     getAll() {
         return []
     }
 }
 
-module.exports = Product;
+module.exports = ProductModel;

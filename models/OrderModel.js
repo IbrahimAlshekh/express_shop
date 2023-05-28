@@ -1,11 +1,11 @@
-class Order {
+class OrderModel {
     constructor() {
         this.db = require('../database/database').db();
     }
 
     createTable() {
         console.log('Creating order table...')
-        const ordersTableSql = `
+        const ordersTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "orders"
             (
                 "id"            int,
@@ -16,8 +16,9 @@ class Order {
                 "created_at"    datetime,
                 FOREIGN KEY("user_id") REFERENCES users("id")
             );
-        `;
-        const orderItemsTableSql = `
+        `);
+        ordersTableStatement.run();
+        const orderItemsTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "order_items"
             (
                 "id"         int,
@@ -28,12 +29,9 @@ class Order {
                 FOREIGN KEY("product_id") REFERENCES products("id"),
                 FOREIGN KEY("order_id") REFERENCES orders("id")
             );
-        `;
-
-        this.db.run(ordersTableSql);
-        this.db.run(orderItemsTableSql);
-        this.db.close();
+        `);
+        orderItemsTableStatement.run();
     }
 }
 
-module.exports = Order;
+module.exports = OrderModel;
