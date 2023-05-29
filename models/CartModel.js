@@ -17,7 +17,7 @@ class CartModel {
         const cartItemsTableSql = this.db.prepare(`
         CREATE TABLE IF NOT EXISTS "cart_items"
             (
-                "id"         int,
+                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
                 "product_id" int,
                 "price"      float,
                 "quantity"   int,

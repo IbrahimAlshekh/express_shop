@@ -8,7 +8,7 @@ class ProductModel {
         const productsTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "products"
             (
-                "id"          int,
+                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
                 "name"        string,
                 "description" string,
                 "price"       float,
@@ -19,7 +19,7 @@ class ProductModel {
         const productImagesTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "product_images"
             (
-                "id"         int,
+                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
                 "name"       string,
                 "image"      string,
                 "product_id" int,

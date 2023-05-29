@@ -10,7 +10,7 @@ class UserModel {
         const usesTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "users"
             (
-                "id"            int,
+                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
                 "first_name"    string,
                 "last_name"     string,
                 "username"      string,

@@ -15,7 +15,9 @@ router.get('/products', function(req, res, next) {
 });
 
 // User routes
+router.post('/users', UserController.store);
 router.get('/users', UserController.index);
 router.get('/users/create', UserController.create);
+router.get('/users/edit/:id', UserController.edit);
 
 module.exports = router;

@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS "products"
 
 CREATE TABLE IF NOT EXISTS "product_images"
 (
-  "id"         int,
+  "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
   "name"       string,
   "image"      string,
   "product_id" int,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS "orders"
 
 CREATE TABLE IF NOT EXISTS "order_items"
 (
-  "id"         int,
+  "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
   "product_id" int,
   "price"      float,
   "quantity"   int,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS "carts"
 
 CREATE TABLE IF NOT EXISTS "cart_items"
 (
-  "id"         int,
+  "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
   "product_id" int,
   "price"      float,
   "quantity"   int,

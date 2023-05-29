@@ -8,7 +8,7 @@ class OrderModel {
         const ordersTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "orders"
             (
-                "id"            int,
+                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
                 "user_id"       int,
                 "status"        string,
                 "paymentmethod" string,
@@ -21,7 +21,7 @@ class OrderModel {
         const orderItemsTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "order_items"
             (
-                "id"         int,
+                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
                 "product_id" int,
                 "price"      float,
                 "quantity"   int,
