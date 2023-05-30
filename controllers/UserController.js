@@ -6,9 +6,9 @@ class UserController {
         res.render('admin/users/index', {title: 'users', users: await user.getAll()});
     }
 
-    static edit(req, res, next) {
+    static async edit(req, res, next) {
         const user = new UserModel();
-        res.render('admin/users/edit', {title: 'users', users: user.getAll()});
+        res.render('admin/users/edit', {title: 'users', user: await user.get(req.params.id)});
     }
 
     static create(req, res, next) {
@@ -37,18 +37,29 @@ class UserController {
         }
 
         const user = new UserModel();
-        user.create({
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            username: req.body.username,
-            email: req.body.email,
-            password: req.body.password,
-            profile_image: newImageName ?? '',
-            is_admin: req.body.is_admin === 'on' ? 1 : 0
-        });
+        if(req.body.action === 'create') {
+            user.create({
+                first_name: req.body.first_name,
+                last_name: req.body.last_name,
+                username: req.body.username,
+                email: req.body.email,
+                password: req.body.password,
+                profile_image: newImageName ?? '',
+                is_admin: req.body.is_admin === 'on' ? 1 : 0
+            });
+        }else if(req.body.action === 'edit'){
+            user.update(req.body.id, {
+                first_name: req.body.first_name,
+                last_name: req.body.last_name,
+                username: req.body.username,
+                email: req.body.email,
+                profile_image: newImageName ?? req.body.profile_image_name,
+                is_admin: req.body.is_admin === 'on' ? 1 : 0
+            });
+        }
 
         if (errors.length > 0) {
-            res.render('admin/users/create', {
+            res.render('admin/users/' + req.body.action, {
                 title: 'users',
                 error: errors.length > 0 ? JSON.stringify(errors) : '',
                 user: {}

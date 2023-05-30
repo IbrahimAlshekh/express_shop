@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const e = require("express");
 
 class UserModel {
     constructor() {
@@ -10,7 +11,7 @@ class UserModel {
         const usesTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "users"
             (
-                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
+                "id"            INTEGER PRIMARY KEY AUTOINCREMENT,
                 "first_name"    string,
                 "last_name"     string,
                 "username"      string,
@@ -74,23 +75,23 @@ class UserModel {
             INSERT INTO users (first_name, last_name, username, email, password, profile_image, is_admin)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `);
-        const password = crypto.createHash('sha256').update(user.password).digest('hex');
-        stmt.run(user.first_name ?? null, user.last_name ?? null, user.username, user.email, password, user.profile_image ?? null, user.is_admin ?? 0);
+        stmt.run(user.first_name ?? null, user.last_name ?? null, user.username, user.email, this.getPasswordHash(user.password), user.profile_image ?? null, user.is_admin ?? 0);
     }
 
-    update(user) {
-        const stmt = `
+    update(userId, userData) {
+        const password = userData.password ? `password = '${this.getPasswordHash(userData.password)}',` : '';
+        const stmt = this.db.prepare(`
             UPDATE users
             SET first_name    = ?,
                 last_name     = ?,
                 username      = ?,
                 email         = ?,
-                password      = ?,
                 profile_image = ?,
+                ${password} 
                 is_admin      = ?
             WHERE id = ?
-        `;
-        stmt.run(user.first_name, user.last_name, user.username, user.email, user.password, user.profile_image, user.is_admin, user.id);
+        `);
+        stmt.run(userData.first_name, userData.last_name, userData.username, userData.email, userData.profile_image, userData.is_admin, userId);
     }
 
     delete(id) {
@@ -100,6 +101,10 @@ class UserModel {
             WHERE id = ?
         `;
         stmt.run(id);
+    }
+
+    getPasswordHash(password) {
+        return crypto.createHash('sha256').update(password).digest('hex');
     }
 }
 

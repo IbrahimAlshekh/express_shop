@@ -2,16 +2,18 @@
 <main class="p-4">
     <h4 class="mb-3">User information</h4>
     <form action="/admin/users" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="action" value="create">
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="id" value="<%= user.id %>">
         <div class="row">
             <div class="col-12 border-right">
                 <div class="d-flex justify-content-start align-items-center">
                     <img class="rounded-circle mx-3"
-                         src="/images/user_profile.png"
                          style="width:80px; height:80px;"
+                         src="/images/<%= user?.profile_image ?? 'user_login.png' %>"
                          alt="profile image">
                     <div class="mt-3 w-75">
                         <input class="form-control" name="profile_image" type="file" id="formFile">
+                        <input type="hidden" name="profile_image_name" value="<%= user?.profile_image ?? '' %>">
                     </div>
                 </div>
             </div>
@@ -20,32 +22,32 @@
                     <div class="row g-3">
                         <div class="col-sm-6">
                             <label for="firstName" class="form-label">First name</label>
-                            <input  name="first_name" type="text" class="form-control"
+                            <input value="<%= user?.first_name ?? "" %>" name="first_name" type="text" class="form-control"
                                    id="firstName">
                         </div>
                         <div class="col-sm-6">
                             <label for="lastName" class="form-label">Last name</label>
-                            <input  name="last_name" type="text" class="form-control"
+                            <input value="<%= user?.last_name ?? "" %>" name="last_name" type="text" class="form-control"
                                    id="lastName">
                         </div>
                         <div class="col-9">
                             <label for="username" class="form-label">Username</label>
                             <div class="input-group has-validation">
                                 <span class="input-group-text">@</span>
-                                <input  name="username" type="text" class="form-control"
+                                <input value="<%= user?.username ?? "" %>" name="username" type="text" class="form-control"
                                        id="username">
                             </div>
                         </div>
                         <div class="col-3">
                             <label for="is_admin" class="form-label">Is Admin</label>
                             <div class="input-group">
-                                <input  name="is_admin" type="checkbox" class="form-check-input"
+                                <input <%= user?.is_admin ? "checked" : "" %> name="is_admin" type="checkbox" class="form-check-input"
                                        id="is_admin">
                             </div>
                         </div>
                         <div class="col-12">
                             <label for="email" class="form-label">Email</label>
-                            <input  type="email" name="email" class="form-control"
+                            <input value="<%= user?.email ?? "" %>" type="email" name="email" class="form-control"
                                    id="firstName">
                         </div>
                         <div class="col-sm-6">
