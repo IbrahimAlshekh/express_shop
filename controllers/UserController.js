@@ -68,6 +68,12 @@ class UserController {
             res.redirect('/admin/users');
         }
     }
+
+    static async delete(req, res, next) {
+        const user = new UserModel();
+        await user.delete(req.params.id);
+        res.redirect('/admin/users');
+    }
 }
 
 module.exports = UserController;

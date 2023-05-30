@@ -25,11 +25,33 @@
                             <td><%= user.username %></td>
                             <td><%= user.email %></td>
                             <td><%= user.is_admin %></td>
-                            <td><a href="/admin/users/edit/<%= user.id %>"><i class="bi bi-pencil-square"></i></a></td>
+                            <td>
+                                <a href="/admin/users/edit/<%= user.id %>"><i class="bi bi-pencil-square"></i></a>
+                                <i onclick="if(confirm('Are you sure?')) deleteUser(<%= user.id %>);"
+                                   class="bi bi-trash text-danger"></i>
+                            </td>
                         </tr>
                     <% }) %>
                 <% } %>
                 </tbody>
+                <script>
+                    deleteUser = function (id) {
+                        fetch('/admin/users/' + id, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            }).finally(() => {
+                            window.location.href = '/admin/users';
+                        });
+                    }
+                </script>
             </table>
         </div>
     </div>

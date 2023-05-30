@@ -95,11 +95,11 @@ class UserModel {
     }
 
     delete(id) {
-        const stmt = `
+        const stmt = this.db.prepare(`
             DELETE
             FROM users
             WHERE id = ?
-        `;
+        `);
         stmt.run(id);
     }
 
