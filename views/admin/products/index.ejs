@@ -1,0 +1,57 @@
+<%- include('../../layouts/admin/header') %>
+<div class="p-4" style="min-height: 95vh">
+    <a href="/admin/products/create" class="btn btn-primary mb-3">Create Product</a>
+    <div class="card">
+        <div class="table-responsive text-nowrap">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Thumbnail</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                <% if(products.length > 0) { %>
+                    <% products.forEach(function(product){ %>
+                        <tr>
+                            <td><%= product.id %></td>
+                            <td><img alt="product image" src="/images/<%= product.thumbnail ?? 'product_image.png' %>" style="height: 48px; width: 48px"></td>
+                            <td><%= product.name %></td>
+                            <td><%= product.description %></td>
+                            <td><%= product.price %></td>
+                            <td>
+                                <a href="/admin/products/edit/<%= product.id %>"><i class="bi bi-pencil-square"></i></a>
+                                <i onclick="if(confirm('Are you sure?')) deleteProduct(<%= product.id %>);"
+                                   class="bi bi-trash text-danger"></i>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } %>
+                </tbody>
+                <script>
+                    deleteProduct = function (id) {
+                        fetch('/admin/products/' + id, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            }).finally(() => {
+                            window.location.href = '/admin/products';
+                        });
+                    }
+                </script>
+            </table>
+        </div>
+    </div>
+</div>
+<%- include('../../layouts/admin/footer') %>

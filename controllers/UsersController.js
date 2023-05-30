@@ -1,6 +1,6 @@
 const {UserModel} = require('../models');
 
-class UserController {
+class UsersController {
     static async index(req, res, next) {
         const user = new UserModel();
         res.render('admin/users/index', {title: 'users', users: await user.getAll()});
@@ -76,4 +76,4 @@ class UserController {
     }
 }
 
-module.exports = UserController;
+module.exports = UsersController;

@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "products"
   "name"        string,
   "description" string,
   "price"       float,
-  "thumnail"    string
+  "thumbnail"    string
 );
 
 CREATE TABLE IF NOT EXISTS "product_images"

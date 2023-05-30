@@ -1,0 +1,77 @@
+<%- include('../../layouts/admin/header') %>
+<main class="p-4">
+    <h4 class="mb-3">Product information</h4>
+    <form action="/admin/products" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="id" value="<%= product.id %>">
+        <div class="row">
+            <div class="col-12 border-right">
+                <div class="d-flex justify-content-start align-items-center">
+                    <img class="rounded-circle mx-3"
+                         style="width:80px; height:80px;"
+                         src="/images/<%= product?.profile_image ?? 'product_login.png' %>"
+                         alt="profile image">
+                    <div class="mt-3 w-75">
+                        <input class="form-control" name="profile_image" type="file" id="formFile">
+                        <input type="hidden" name="profile_image_name" value="<%= product?.profile_image ?? '' %>">
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 border-right">
+                <div class="p-3 py-5">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="firstName" class="form-label">First name</label>
+                            <input value="<%= product?.first_name ?? "" %>" name="first_name" type="text" class="form-control"
+                                   id="firstName">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="lastName" class="form-label">Last name</label>
+                            <input value="<%= product?.last_name ?? "" %>" name="last_name" type="text" class="form-control"
+                                   id="lastName">
+                        </div>
+                        <div class="col-9">
+                            <label for="productname" class="form-label">Productname</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text">@</span>
+                                <input value="<%= product?.productname ?? "" %>" name="productname" type="text" class="form-control"
+                                       id="productname">
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <label for="is_admin" class="form-label">Is Admin</label>
+                            <div class="input-group">
+                                <input <%= product?.is_admin ? "checked" : "" %> name="is_admin" type="checkbox" class="form-check-input"
+                                       id="is_admin">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label for="email" class="form-label">Email</label>
+                            <input value="<%= product?.email ?? "" %>" type="email" name="email" class="form-control"
+                                   id="firstName">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control"
+                                   id="password">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="password_confirm" class="form-label">Confirm password</label>
+                            <input type="password" name="password_confirm" class="form-control"
+                                   id="password_confirm">
+                        </div>
+                        <% if (error){ %>
+                            <div class="alert alert-danger" role="alert">
+                                <%= error %>
+                            </div>
+                        <% } %>
+                        <div class="mt-5 text-center">
+                            <button class="btn btn-primary w-50 profile-button">Save Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+<%- include('../../layouts/admin/footer') %>

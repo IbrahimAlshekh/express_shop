@@ -12,7 +12,7 @@ class ProductModel {
                 "name"        string,
                 "description" string,
                 "price"       float,
-                "thumnail"    string
+                "thumbnail"    string
             );
         `);
 
@@ -30,7 +30,96 @@ class ProductModel {
         productImagesTableStatement.run();
     }
     getAll() {
-        return []
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`SELECT * FROM products`);
+            stmt.all((err, rows) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(rows);
+            });
+        });
+    }
+
+    get(id) {
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`
+                SELECT *
+                FROM products
+                WHERE id = ?
+            `);
+            return stmt.get(id, (err, row) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(row);
+            });
+        });
+    }
+
+    getWhere(where) {
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`
+                SELECT *
+                FROM products
+                WHERE ${where}
+            `);
+            return stmt.get((err, row) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(row);
+            });
+        });
+    }
+
+    create(product) {
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`
+                INSERT INTO products(name, description, price, thumbnail)
+                VALUES (?, ?, ?, ?)
+            `);
+            stmt.run(product.name, product.description, product.price, product.thumbnail, (err) => {
+                if (err) {
+                    reject(err);
+                }
+            });
+            resolve();
+        });
+    }
+
+    update(productId,product) {
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`
+                UPDATE products
+                SET name = ?,
+                    description = ?,
+                    price = ?,
+                    thumbnail = ?
+                WHERE id = ?
+            `);
+            return stmt.run(product.name, product.description, product.price, product.thumbnail, productId, (err) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve();
+            });
+        });
+    }
+
+    delete(id) {
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`
+                DELETE FROM products
+                WHERE id = ?
+            `);
+            return stmt.run(id, (err) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve();
+            });
+        });
     }
 }
 
