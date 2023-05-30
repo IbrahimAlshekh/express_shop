@@ -46,11 +46,15 @@ class UserController {
             is_admin: req.body.is_admin ?? 0
         });
 
-        res.render('admin/users/create', {
-            title: 'users',
-            error: errors.length > 0 ? JSON.stringify(errors) :'',
-            user: {}
-        })
+        if(errors.length > 0){
+            res.render('admin/users/create', {
+                title: 'users',
+                error: errors.length > 0 ? JSON.stringify(errors) :'',
+                user: {}
+            })
+        }else{
+            res.redirect('/admin/users');
+        }
     }
 }
 
