@@ -27,12 +27,19 @@
                             <input value="<%= user?.last_name ?? "" %>" name="last_name" type="text" class="form-control"
                                    id="lastName">
                         </div>
-                        <div class="col-12">
+                        <div class="col-9">
                             <label for="username" class="form-label">Username</label>
                             <div class="input-group has-validation">
                                 <span class="input-group-text">@</span>
                                 <input value="<%= user?.username ?? "" %>" name="username" type="text" class="form-control"
-                                       id="firstName">
+                                       id="username">
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <label for="is_admin" class="form-label">Is Admin</label>
+                            <div class="input-group">
+                                <input <%= user?.is_admin ? "checked" : "" %> name="is_admin" type="checkbox" class="form-check-input"
+                                       id="is_admin">
                             </div>
                         </div>
                         <div class="col-12">
