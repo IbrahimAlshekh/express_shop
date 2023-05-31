@@ -20,6 +20,7 @@ app.use(function (req, res, next) {
     siteTitle: "Express Shop",
     cart_count: 5,
     base_dir: __dirname,
+    image_dir: __dirname + '/public/images/',
   };
   next();
 });

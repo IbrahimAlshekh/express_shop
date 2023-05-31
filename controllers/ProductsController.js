@@ -1,5 +1,5 @@
 const {ProductModel} = require('../models');
-const {raw} = require("express");
+const {deleteImage, storeImage, isIterable} = require("../lib/utils");
 
 class ProductController {
     static async index(req, res, next) {
@@ -17,86 +17,63 @@ class ProductController {
     }
 
     static async store(req, res, next) {
-        let errors = [];
-        let productThumbnail = req?.files?.thumbnail
-        let newImageName = null;
-        if (productThumbnail) {
-            newImageName = (new Date()).getTime() + '_' + productThumbnail.name;
-            new Promise((resolve, reject) => {
-                productThumbnail?.mv(
-                    res.locals.base_dir + '/public/images/' + newImageName,
-                    (err) => {
-                        if (err) {
-                            reject(err);
-                        }
-                    });
-            }).then(() => {
-
-            }).catch(() => {
-                errors.push({profileImage: 'Error: there was a problem uploading the profile image'});
-            });
-        }
-
-
+        let thumbnail = storeImage(req?.files?.thumbnail, res.locals.base_dir + '/public/images/');
         const product = new ProductModel();
-        if(req.body.action === 'create') {
-            const cr = await product.create({
+        let productId = null;
+        if (req.body.action === 'create') {
+            productId = await product.create({
                 name: req.body.name,
                 description: req.body.description,
-                thumbnail: newImageName ?? '',
-                price: req.price
+                thumbnail: thumbnail ?? '',
+                price: parseFloat(req.body.price),
             });
-
-            console.log(cr);
-
-
-        }else if(req.body.action === 'edit'){
+        } else if (req.body.action === 'edit') {
+            productId = req.body.id;
             product.update(req.body.id, {
-                first_name: req.body.first_name,
-                last_name: req.body.last_name,
-                productname: req.body.productname,
-                email: req.body.email,
-                profile_image: newImageName ?? req.body.profile_image_name,
-                is_admin: req.body.is_admin === 'on' ? 1 : 0
+                name: req.body.name,
+                description: req.body.description,
+                thumbnail: thumbnail ?? req.body.current_thumbnail_name,
+                price: parseFloat(req.body.price),
             });
         }
 
-        for (let ke in req.files) {
-            if (ke ==='thumbnail') continue;
-            let file = req.files[ke];
-            if (file) {
-                newImageName = (new Date()).getTime() + '_' + file.name;
-                new Promise((resolve, reject) => {
-                    file?.mv(
-                        res.locals.base_dir + '/public/images/' + newImageName,
-                        (err) => {
-                            if (err) {
-                                reject(err);
-                            }
-                        });
-                }).then(() => {
-
-                }).catch(() => {
-                    errors.push({profileImage: 'Error: there was a problem uploading the profile image'});
-                });
+        if (req.files) {
+            console.log(req.files.gallery)
+            if(isIterable(req.files.gallery)) {
+                for (let file of req.files.gallery ?? []) {
+                    let galleryImage = storeImage(file, res.locals.base_dir + '/public/images/');
+                    if (galleryImage) {
+                        product.addGalleryImage(productId, galleryImage);
+                    }
+                }
+            }else {
+                let galleryImage = storeImage(req.files.gallery, res.locals.base_dir + '/public/images/');
+                if (galleryImage) {
+                    product.addGalleryImage(productId, galleryImage);
+                }
             }
         }
 
-        if (errors.length > 0) {
-            res.render('admin/products/' + req.body.action, {
-                title: 'products',
-                error: errors.length > 0 ? JSON.stringify(errors) : '',
-                product: {}
-            })
-        } else {
-            res.redirect('/admin/products');
-        }
+        res.redirect(req.body.action === 'edit' ?  '/admin/products/edit/' + productId: '/admin/products');
     }
 
     static async delete(req, res, next) {
         const product = new ProductModel();
+        const productData = await product.get(req.params.id);
+        deleteImage(res.locals.image_dir + productData.thumbnail)
+        for (const image of productData.gallery) {
+            deleteImage(res.locals.image_dir + image.image)
+        }
         await product.delete(req.params.id);
         res.redirect('/admin/products');
+    }
+
+    static async deleteGalleryImage(req, res, next) {
+        const product = new ProductModel();
+        const galleryImage = await product.getGalleryImage(req.params.id);
+        deleteImage(res.locals.image_dir + galleryImage.image)
+        await product.deleteGalleryImage(req.params.id);
+        res.redirect('/admin/products/edit/' + galleryImage.product_id);
     }
 }
 

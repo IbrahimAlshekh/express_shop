@@ -8,33 +8,50 @@ class ProductModel {
         const productsTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "products"
             (
-                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
+                "id"          INTEGER PRIMARY KEY AUTOINCREMENT,
                 "name"        string,
                 "description" string,
                 "price"       float,
-                "thumbnail"    string
+                "thumbnail"   string
             );
         `);
 
         const productImagesTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "product_images"
             (
-                "id"  INTEGER   PRIMARY KEY AUTOINCREMENT,
-                "name"       string,
+                "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
                 "image"      string,
                 "product_id" int,
-                FOREIGN KEY("product_id") REFERENCES products("id")
+                FOREIGN KEY ("product_id") REFERENCES products ("id")
             );
         `);
         productsTableStatement.run();
         productImagesTableStatement.run();
     }
-    getAll() {
+
+    getAll(withGallery = false) {
         return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`SELECT * FROM products`);
-            stmt.all((err, rows) => {
+            const stmt = this.db.prepare(`SELECT *
+                                          FROM products`);
+            stmt.all(async (err, rows) => {
                 if (err) {
                     reject(err);
+                }
+                if (withGallery) {
+                    for (const rowKey in rows) {
+                        rows[rowKey].gallery = await new Promise((resolve, reject) => {
+                            this.db.prepare(`
+                                SELECT *
+                                from product_images
+                                WHERE product_id = ?
+                            `).all(rows[rowKey].id, (err, images) => {
+                                if (err) {
+                                    reject(err);
+                                }
+                                resolve(images);
+                            });
+                        });
+                    }
                 }
                 resolve(rows);
             });
@@ -46,6 +63,32 @@ class ProductModel {
             const stmt = this.db.prepare(`
                 SELECT *
                 FROM products
+                WHERE id = ?
+            `);
+            return stmt.get(id, (err, row) => {
+                if (err) {
+                    reject(err);
+                }
+                this.db.prepare(`
+                    SELECT *
+                    FROM product_images
+                    WHERE product_id = ?
+                `).all(id, (err, rows) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    row.gallery = rows;
+                    resolve(row);
+                })
+            });
+        });
+    }
+
+    async getGalleryImage(id) {
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`
+                SELECT *
+                FROM product_images
                 WHERE id = ?
             `);
             return stmt.get(id, (err, row) => {
@@ -84,18 +127,37 @@ class ProductModel {
                     reject(err);
                 }
             });
-            resolve();
+            this.db.prepare(`SELECT last_insert_rowid() AS id`).get((err, row) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(row.id);
+            });
         });
     }
 
-    update(productId,product) {
+    addGalleryImage(product_id, image) {
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`
+                INSERT INTO product_images(image, product_id)
+                VALUES (?, ?)
+            `);
+            stmt.run(image, product_id, (err) => {
+                if (err) {
+                    reject(err);
+                }
+            });
+        });
+    }
+
+    update(productId, product) {
         return new Promise((resolve, reject) => {
             const stmt = this.db.prepare(`
                 UPDATE products
-                SET name = ?,
+                SET name        = ?,
                     description = ?,
-                    price = ?,
-                    thumbnail = ?
+                    price       = ?,
+                    thumbnail   = ?
                 WHERE id = ?
             `);
             return stmt.run(product.name, product.description, product.price, product.thumbnail, productId, (err) => {
@@ -110,7 +172,24 @@ class ProductModel {
     delete(id) {
         return new Promise((resolve, reject) => {
             const stmt = this.db.prepare(`
-                DELETE FROM products
+                DELETE
+                FROM products
+                WHERE id = ?
+            `);
+            return stmt.run(id, (err) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve();
+            });
+        });
+    }
+
+    async deleteGalleryImage(id) {
+        return new Promise((resolve, reject) => {
+            const stmt = this.db.prepare(`
+                DELETE
+                FROM product_images
                 WHERE id = ?
             `);
             return stmt.run(id, (err) => {

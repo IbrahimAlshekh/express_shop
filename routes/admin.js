@@ -16,6 +16,7 @@ router.get('/products', ProductsController.index);
 router.get('/products/create', ProductsController.create);
 router.get('/products/edit/:id', ProductsController.edit);
 router.delete('/products/:id', ProductsController.delete);
+router.delete('/products/gallery/:id', ProductsController.deleteGalleryImage);
 
 // User routes
 router.post('/users', UsersController.store);

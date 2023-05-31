@@ -7,7 +7,6 @@
                 <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Thumbnail</th>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Price</th>
@@ -19,8 +18,10 @@
                     <% products.forEach(function(product){ %>
                         <tr>
                             <td><%= product.id %></td>
-                            <td><img alt="product image" src="/images/<%= product.thumbnail ?? 'product_image.png' %>" style="height: 48px; width: 48px"></td>
-                            <td><%= product.name %></td>
+                            <td>
+                                <img class="rounded me-2" alt="product image" src="/images/<%= product.thumbnail ?? 'product_image.png' %>" style="height: 32px; width: 32px">
+                                <%= product.name %>
+                            </td>
                             <td><%= product.description %></td>
                             <td><%= product.price %></td>
                             <td>

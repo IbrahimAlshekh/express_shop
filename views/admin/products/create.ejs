@@ -12,7 +12,7 @@
                          style="width:80px; height:80px;"
                          alt="profile image">
                     <div class="mt-3 w-75">
-                        <input id="thumbnail" class="form-control" name="thumbnail" type="file">
+                        <input id="thumbnail" class="form-control" name="thumbnail" type="file" accept="image/*,.mp4">
                     </div>
                 </div>
             </div>
@@ -40,7 +40,7 @@
                         </div>
                         <div class="col-12 border-right">
                             <label for="gallery">Product gallery</label>
-                            <input id="gallery" class="form-control" name="thumbnail" type="file" multiple>
+                            <input id="gallery" class="form-control" name="gallery" type="file" accept="image/*,.mp4"   multiple>
                         </div>
                         <% if (error){ %>
                             <div class="alert alert-danger" role="alert">

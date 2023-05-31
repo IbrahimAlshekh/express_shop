@@ -1,4 +1,5 @@
 const {UserModel} = require('../models');
+const {deleteImage} = require("../lib/utils");
 
 class UsersController {
     static async index(req, res, next) {
@@ -37,7 +38,7 @@ class UsersController {
         }
 
         const user = new UserModel();
-        if(req.body.action === 'create') {
+        if (req.body.action === 'create') {
             user.create({
                 first_name: req.body.first_name,
                 last_name: req.body.last_name,
@@ -47,7 +48,7 @@ class UsersController {
                 profile_image: newImageName ?? '',
                 is_admin: req.body.is_admin === 'on' ? 1 : 0
             });
-        }else if(req.body.action === 'edit'){
+        } else if (req.body.action === 'edit') {
             user.update(req.body.id, {
                 first_name: req.body.first_name,
                 last_name: req.body.last_name,
@@ -71,6 +72,8 @@ class UsersController {
 
     static async delete(req, res, next) {
         const user = new UserModel();
+        const productData = await user.get(req.params.id);
+        deleteImage(res.locals.image_dir + productData.profile_image)
         await user.delete(req.params.id);
         res.redirect('/admin/users');
     }
