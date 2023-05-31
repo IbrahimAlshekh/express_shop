@@ -1,7 +1,7 @@
 <%- include('../layouts/auth/header', {title: 'Signup'}) %>
-<form method="post" action="register">
+<form method="post" action="/auth/signup">
         <h1 class="h3 mb-3 fw-normal text-center">Please register</h1>
-        <a href="login"><i class="px-1 bi bi-arrow-90deg-left"></i>Back to login</a>
+        <a href="/auth/login"><i class="px-1 bi bi-arrow-90deg-left"></i>Back to login</a>
         <div class="form-floating my-2">
             <input type="text" class="form-control" name="first_name" id="floatingInput" placeholder="First name">
             <label for="floatingInput">First name</label>
@@ -20,6 +20,7 @@
         </div>
         <div class="form-fating my-2">
             <input type="password" class="form-control" name="password" id="floatingPassword" placeholder="Password">
+            <label for="floatingPassword">Password</label>
         </div>
         <button class=" w-100 btn btn-lg btn-primary" type="submit">Register</button>
     </form>

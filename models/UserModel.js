@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const e = require("express");
+const {getPasswordHash} = require("../lib/utils");
 
 class UserModel {
     constructor() {
@@ -58,13 +59,15 @@ class UserModel {
             const stmt = this.db.prepare(`
                 SELECT *
                 FROM users
-                WHERE username = ?
+                WHERE (username = ? or email = ?)
                   AND password = ?
             `);
-            return stmt.get(username, password, (err, row) => {
+            console.log(username, password, getPasswordHash(password), stmt)
+            return stmt.get(username ?? null, username ?? null, getPasswordHash(password), (err, row) => {
                 if (err) {
                     reject(err);
                 }
+                console.log('resolve',row)
                 resolve(row);
             });
         });
@@ -75,11 +78,11 @@ class UserModel {
             INSERT INTO users (first_name, last_name, username, email, password, profile_image, is_admin)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `);
-        stmt.run(user.first_name ?? null, user.last_name ?? null, user.username, user.email, this.getPasswordHash(user.password), user.profile_image ?? null, user.is_admin ?? 0);
+        stmt.run(user.first_name ?? null, user.last_name ?? null, user.username, user.email, getPasswordHash(user.password), user.profile_image ?? null, user.is_admin ?? 0);
     }
 
     update(userId, userData) {
-        const password = userData.password ? `password = '${this.getPasswordHash(userData.password)}',` : '';
+        const password = userData.password ? `password = '${getPasswordHash(userData.password)}',` : '';
         const stmt = this.db.prepare(`
             UPDATE users
             SET first_name    = ?,
@@ -101,10 +104,6 @@ class UserModel {
             WHERE id = ?
         `);
         stmt.run(id);
-    }
-
-    getPasswordHash(password) {
-        return crypto.createHash('sha256').update(password).digest('hex');
     }
 }
 

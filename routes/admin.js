@@ -3,6 +3,7 @@ const router = express.Router();
 const { UsersController, ProductsController} = require('../controllers');
 
 router.get('/', function(req, res, next) {
+    console.log(req.session)
     res.render('admin/index', { title: 'dashboard' });
 });
 

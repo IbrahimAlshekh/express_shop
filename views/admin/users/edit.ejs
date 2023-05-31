@@ -45,7 +45,7 @@
                                        id="is_admin">
                             </div>
                         </div>
-                        <div class="col-12">
+                        <div class="col-6">
                             <label for="email" class="form-label">Email</label>
                             <input value="<%= user?.email ?? "" %>" type="email" name="email" class="form-control"
                                    id="firstName">
@@ -54,11 +54,6 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" name="password" class="form-control"
                                    id="password">
-                        </div>
-                        <div class="col-sm-6">
-                            <label for="password_confirm" class="form-label">Confirm password</label>
-                            <input type="password" name="password_confirm" class="form-control"
-                                   id="password_confirm">
                         </div>
                         <% if (error){ %>
                             <div class="alert alert-danger" role="alert">
