@@ -1,16 +1,17 @@
 <div class="card shadow-sm m-2 p-2 bg-white"><i class="fa fa-apple"></i>
     <div class="about-product text-center mt-2 h-100">
-        <img src="<%= product.image %>" style="height: 100px; width: 100%; object-fit: contain;" alt="">
-        <a class="mt-auto" href="product' product.id %>">
+        <img src="/images/<%= product.thumbnail %>" style="height: 100px; width: 100%; object-fit: contain;" alt="">
+        <a class="mt-auto" href="/products/<%= product.id %>">
             <%= product.name %>
         </a>
-        <span style="font-size: 12px"><%= product.decsription %>...</span>
+        <br>
+        <span style="font-size: 12px"><%= product.description.slice(0,100) %>...</span>
     </div>
     <div class="d-flex p-2 justify-content-between font-weight-bold mt-4">
         <span>Price</span>
         <span><%= product.price %></span>
     </div>
-    <form method="post">
+    <form method="post" action="/products/add-to-cart">
         <input type="hidden" name="product_id" value="<%= product.id %>">
         <input type="hidden" name="quantity" value="1">
         <input type="hidden" name="action" value="add_to_cart">

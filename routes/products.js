@@ -1,12 +1,9 @@
 const express = require('express');
-const {Product} = require("../models");
+const {ProductsController} = require("../controllers");
 const router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  const product = new Product();
-
-  res.render('products/products', { title: 'products', products: product.getAll() });
-});
+router.get('/', ProductsController.indexCards);
+router.get('/:id', ProductsController.show);
 
 module.exports = router;

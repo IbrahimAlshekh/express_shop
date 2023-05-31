@@ -4,7 +4,7 @@
     <h1 class="w-100 text-center p-4 border-bottom border-body-secondary">Search results</h1>
     <div class="row row-cols-6">
         <% products.forEach(function (product){ %>
-        <%- include('shop/includes/product_list_item.html', {product:product}) %>
+        <%- include('../components/product_list_item', {product:product}) %>
         <% }); %>
     </div>
 </div>

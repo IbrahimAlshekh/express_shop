@@ -22,7 +22,7 @@
                                 <img class="rounded me-2" alt="product image" src="/images/<%= product.thumbnail ?? 'product_image.png' %>" style="height: 32px; width: 32px">
                                 <%= product.name %>
                             </td>
-                            <td><%= product.description %></td>
+                            <td><%= product.description.slice(0,50) %></td>
                             <td><%= product.price %></td>
                             <td>
                                 <a href="/admin/products/edit/<%= product.id %>"><i class="bi bi-pencil-square"></i></a>

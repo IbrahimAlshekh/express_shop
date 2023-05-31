@@ -6,6 +6,16 @@ class ProductController {
         const product = new ProductModel();
         res.render('admin/products/index', {title: 'products', products: await product.getAll()});
     }
+    static async indexCards(req, res, next) {
+        const product = new ProductModel();
+        res.render('products/products', {title: 'products', products: await product.getAll()});
+    }
+
+    static async show(req, res, next) {
+        const product = new ProductModel();
+        const pickedProduct = await product.get(req.params.id);
+        res.render('products/single_product', {title: pickedProduct.name, product: pickedProduct });
+    }
 
     static async edit(req, res, next) {
         const product = new ProductModel();
