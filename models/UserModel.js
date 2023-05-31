@@ -67,7 +67,6 @@ class UserModel {
                 if (err) {
                     reject(err);
                 }
-                console.log('resolve',row)
                 resolve(row);
             });
         });

@@ -1,6 +1,6 @@
-const {UserModel} = require('../models');
+const {UserModel, CartModel} = require('../models');
 
-class UsersController {
+class AuthController {
 
     static login(req, res, next) {
         res.render('auth/login', {title: 'login'});
@@ -9,8 +9,8 @@ class UsersController {
     static async authenticate(req, res, next) {
         const userModel = new UserModel();
         const user = await userModel.authenticate(req.body.username, req.body.password);
-        console.log('user;',user)
         if (user) {
+            user.cart = await (new CartModel()).get(user.id);
             req.session.user = user;
             res.redirect('/');
         } else {
@@ -38,6 +38,16 @@ class UsersController {
         });
     }
 
+    static isLoggedIn(req, res, next) {
+        if (req.session.user) {
+            next();
+            return true;
+        } else {
+            res.redirect('/auth/login');
+            return false;
+        }
+    }
+
     static logout(req, res, next) {
         req.session.destroy();
         res.redirect('/');
@@ -46,4 +56,4 @@ class UsersController {
 
 }
 
-module.exports = UsersController;
+module.exports = AuthController;

@@ -1,11 +1,14 @@
-const {ProductModel} = require('../models');
+const {ProductModel, CartModel} = require('../models');
 const {deleteImage, storeImage, isIterable} = require("../lib/utils");
+const AuthController = require("./AuthController");
+const {log} = require("debug");
 
 class ProductController {
     static async index(req, res, next) {
         const product = new ProductModel();
         res.render('admin/products/index', {title: 'products', products: await product.getAll()});
     }
+
     static async indexCards(req, res, next) {
         const product = new ProductModel();
         res.render('products/products', {title: 'products', products: await product.getAll()});
@@ -14,7 +17,27 @@ class ProductController {
     static async show(req, res, next) {
         const product = new ProductModel();
         const pickedProduct = await product.get(req.params.id);
-        res.render('products/single_product', {title: pickedProduct.name, product: pickedProduct });
+        res.render('products/single_product', {title: pickedProduct.name, product: pickedProduct});
+    }
+
+    static async addToCart(req, res, next) {
+        // if(!AuthController.isLoggedIn(req, res, next)) {
+        //     return;
+        // }
+        // const product = await (new ProductModel()).get(req.body.product_id);
+        const cartModel = new CartModel();
+        // if (req.session.user.cart === undefined) {
+            const newC = await cartModel.create(1);
+            console.log('new cart', newC);
+            // const userCart = await cartModel.get(req.session.user.id);
+            // console.log('user cart',userCart)
+            // req.session.user.cart = userCart;
+        // }
+        // const cartItem = await cartModel.createCartItem(req.session.user.cart.id, product.id, product.price, req.body.quantity);
+        // console.log('cart item', cartItem);
+        // req.session.user.cart = await cartModel.get(req.session.user.id);
+
+        res.redirect('/');
     }
 
     static async edit(req, res, next) {
@@ -49,14 +72,14 @@ class ProductController {
 
         if (req.files) {
             console.log(req.files.gallery)
-            if(isIterable(req.files.gallery)) {
+            if (isIterable(req.files.gallery)) {
                 for (let file of req.files.gallery ?? []) {
                     let galleryImage = storeImage(file, res.locals.base_dir + '/public/images/');
                     if (galleryImage) {
                         product.addGalleryImage(productId, galleryImage);
                     }
                 }
-            }else {
+            } else {
                 let galleryImage = storeImage(req.files.gallery, res.locals.base_dir + '/public/images/');
                 if (galleryImage) {
                     product.addGalleryImage(productId, galleryImage);
@@ -64,7 +87,7 @@ class ProductController {
             }
         }
 
-        res.redirect(req.body.action === 'edit' ?  '/admin/products/edit/' + productId: '/admin/products');
+        res.redirect(req.body.action === 'edit' ? '/admin/products/edit/' + productId : '/admin/products');
     }
 
     static async delete(req, res, next) {

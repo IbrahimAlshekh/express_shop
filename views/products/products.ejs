@@ -1,5 +1,5 @@
 <%- include('../layouts/main/header', {title: 'Products'}) %>
-<div style="height: 84vh">
+<div style="min-height: 84vh">
     <img src="/images/hero2.png" class="img-fluid rounded-bottom-4 shadow-sm w-100 object-fit-cover"
          alt="">
     <div class="container">
@@ -8,7 +8,7 @@
                 <h1 class="w-100 text-center p-4 border-bottom border-body-secondary">ALL PRODUCTS</h1>
                 <div class="row row-cols-6">
                     <% products.forEach(function (product){ %>
-                        <%- include('../components/product_list_item', {product:product}) %>
+                        <%- include('../components/product_list_item', {product:product,source:'products'}) %>
                     <% }); %>
                 </div>
             </div>

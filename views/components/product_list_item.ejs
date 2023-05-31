@@ -14,7 +14,7 @@
     <form method="post" action="/products/add-to-cart">
         <input type="hidden" name="product_id" value="<%= product.id %>">
         <input type="hidden" name="quantity" value="1">
-        <input type="hidden" name="action" value="add_to_cart">
+        <input type="hidden" name="source" value="<%= source %>">
         <button class="btn btn-outline-success">Add to cart</button>
     </form>
 </div>
