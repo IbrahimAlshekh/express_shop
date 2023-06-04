@@ -59,24 +59,19 @@ class CartModel {
     }
 
     async create(userId) {
-            let crt =  'IVOOOOOOO################';
-            const stmt = this.db.prepare(`
-                INSERT INTO carts(user_id)
-                VALUES (?)
-            `);
-            stmt.run(userId, (err) => {
-                if (err) {
-                    console.log(err);
-                }
-            });
+        let crt = null;
+        const insertStmt = this.db.prepare(`
+          INSERT INTO carts(user_id)
+          VALUES (?)
+        `);
+        const result = await insertStmt.run(userId);
+        const cartId = result.lastInsertRowid;
+        crt = cartId;
+        insertStmt.finalize();
+        
+        this.db.close();
 
-           // await this.db.prepare(`SELECT last_insert_rowid() AS id`).get((err, row) => {
-           //      if (err) {
-           //          console.log(err);
-           //      }
-           //      crt = row;
-           //  });
-           return crt;
+        return crt;
     }
 
     createCartItem(cartId, productId, price, quantity) {

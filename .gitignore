@@ -1,2 +1,6 @@
 node_modules
+
 public/images/*
+
+.DS_Store
+public/.DS_Store
