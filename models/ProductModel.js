@@ -1,6 +1,3 @@
-const { reject } = require("bluebird");
-const { TOOBIG } = require("sqlite3");
-
 class ProductModel {
   constructor() {
     this.open();

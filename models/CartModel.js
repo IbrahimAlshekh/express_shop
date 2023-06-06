@@ -1,5 +1,3 @@
-const e = require("express");
-
 class CartModel {
   constructor() {
     this.open();
@@ -80,10 +78,10 @@ class CartModel {
     this.open();
     try {
       const statement = this.db.prepare(`
-          SELECT *
-          FROM carts
-          WHERE user_id = ?
-        `);
+        SELECT *
+        FROM carts
+        WHERE user_id = ?
+      `);
       const cart = await new Promise((resolve, reject) => {
         statement.get(userId, (err, row) => {
           if (err) {
@@ -93,21 +91,9 @@ class CartModel {
         });
       });
 
+      console.log("cart:", cart);
       if (cart) {
-        const cartItemsStatement = this.db.prepare(`
-            SELECT *
-            FROM cart_items
-            WHERE cart_id = ?
-          `);
-        cart.items = await new Promise((resolve, reject) => {
-          cartItemsStatement.all(cart.id, userId, (err, row) => {
-            if (err) {
-              reject(err);
-            }
-            resolve(row);
-          });
-        });
-        this.finalize(cartItemsStatement, false);
+        cart.items = await this.getCartItems(cart.id);
         return cart;
       } else {
         this.finalize(statement);
@@ -117,6 +103,26 @@ class CartModel {
       console.log(err);
       throw err;
     }
+  }
+
+  async getCartItems(cartId) {
+    this.open();
+    const cartItemsStatement = this.db.prepare(`
+          SELECT *
+          FROM cart_items
+          WHERE cart_id = ?
+        `);
+    const cartItems = await new Promise((resolve, reject) => {
+      cartItemsStatement.all(cartId, (err, row) => {
+        console.log("cart items:", row);
+        if (err) {
+          reject(err);
+        }
+        resolve(row);
+      });
+    });
+    this.finalize(cartItemsStatement, false);
+    return cartItems;
   }
 
   async create(userId) {
