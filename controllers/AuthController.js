@@ -45,7 +45,6 @@ class AuthController {
 
   static isLoggedIn(req, res, next) {
     if (req.session.user) {
-      next();
       return true;
     } else {
       res.redirect("/auth/login");

@@ -1,7 +1,6 @@
 const { ProductModel, CartModel } = require("../models");
 const { deleteImage, storeImage, isIterable } = require("../lib/utils");
 const AuthController = require("./AuthController");
-const { log } = require("debug");
 
 class ProductController {
   static async index(req, res, next) {
@@ -36,39 +35,31 @@ class ProductController {
 
     const { source, product_id, quantity } = req.body;
 
-    const product = new ProductModel().get(product_id);
+    try {
+      const product = await new ProductModel().get(product_id);
 
-    if (req.session.user.cart) {
-      log("cart exists");
-      const cartId = req.session.user.cart.id;
       const cartModel = new CartModel();
-
-      try {
-        await cartModel.createCartItem(
-          cartId,
-          get(product_id).id,
-          product.price,
-          quantity
-        );
-      } catch (err) {
-        next(err);
+      let cartId = req.session.user.cart?.id;
+      if (!cartId) {
+        cartId = await cartModel.create(req.session.user.id);
       }
-    } else {
-      log(">>>>cart does not exist");
+      await cartModel.createCartItem(
+        cartId,
+        product.id,
+        product.price,
+        quantity
+      );
+      // req.session.user.cart = await cartModel.get(cartId);
+      if (source === "product") {
+        res.redirect(`/products/${product_id}`);
+      } else if (source === "products") {
+        res.redirect("/products");
+      } else {
+        res.redirect("/");
+      }
+    } catch (err) {
+      console.log(err);
       res.redirect("/");
-      const cartModel = new CartModel();
-      try {
-        const cartId = await cartModel.create(req.session.user.id);
-        log("cartID", cartId);
-        await cartModel.createCartItem(
-          cartId,
-          product.id,
-          product.price,
-          quantity
-        );
-      } catch (err) {
-        next(err);
-      }
     }
   }
 

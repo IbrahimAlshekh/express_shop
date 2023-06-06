@@ -3,8 +3,8 @@ const { ProductsController } = require("../controllers");
 const router = express.Router();
 
 /* GET users listing. */
-router.get("/", ProductsController.indexCards);
-router.get("/:id", ProductsController.show);
 router.post("/add-to-cart", ProductsController.addToCart);
+router.get("/:id", ProductsController.show);
+router.get("/", ProductsController.indexCards);
 
 module.exports = router;
