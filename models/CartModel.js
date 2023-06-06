@@ -1,11 +1,40 @@
-class CartModel {
-    constructor() {
-        this.db = require('../database/database').db();
-    }
+const e = require("express");
 
-    createTable() {
-        console.log('Creating cart table...');
-        const cartsTableStatement = this.db.prepare(`
+class CartModel {
+  constructor() {
+    this.open();
+  }
+
+  open() {
+    if (!this.db || (this.db && !this.db.open)) {
+      this.db = require("../database/database").db("CartModel");
+    }
+  }
+
+  close() {
+    this.db.close((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Cart Model: Database connection closed.");
+      }
+    });
+  }
+
+  finalize(stmt, close = true) {
+    stmt.finalize((err) => {
+      if (err) {
+        console.log(err);
+      }
+      if (close) {
+        this.close();
+      }
+    });
+  }
+
+  createTable() {
+    this.db.serialize(() => {
+      const cartsTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "carts"
             (
                 "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,8 +42,17 @@ class CartModel {
                 FOREIGN KEY ("user_id") REFERENCES users ("id")
             );
         `);
-        cartsTableStatement.run();
-        const cartItemsTableSql = this.db.prepare(`
+      cartsTableStatement.run((err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("carts table created successfully.");
+        }
+      });
+
+      this.finalize(cartsTableStatement, false);
+
+      const cartItemsTableSql = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "cart_items"
             (
                 "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,84 +64,129 @@ class CartModel {
                 FOREIGN KEY ("cart_id") REFERENCES carts ("id")
             );
         `);
-        cartItemsTableSql.run();
-    }
+      cartItemsTableSql.run((err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("cart_items table created successfully.");
+        }
+      });
 
-    get(userId) {
-        return new Promise((resolve, reject) => {
-            const statement = this.db.prepare(`
-                SELECT *
-                FROM carts
-                WHERE user_id = ?
-            `);
-            statement.get(userId, (err, row) => {
-                if (err) {
-                    reject(err);
-                }
-                if (row) {
-                    this.db.prepare(`
-                        SELECT *
-                        FROM cart_items
-                        WHERE cart_id = ?
-                    `).all(row?.id, (err, rows) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        row.items = rows;
-                        resolve(row);
-                    })
-                }
-                resolve(undefined);
-            });
+      this.finalize(cartItemsTableSql);
+    });
+  }
+
+  async get(userId) {
+    this.open();
+    try {
+      const statement = this.db.prepare(`
+          SELECT *
+          FROM carts
+          WHERE user_id = ?
+        `);
+      const cart = await new Promise((resolve, reject) => {
+        statement.get(userId, (err, row) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(row);
         });
-    }
+      });
 
-    async create(userId) {
-        let crt = null;
-        const insertStmt = this.db.prepare(`
+      if (cart) {
+        const cartItemsStatement = this.db.prepare(`
+            SELECT *
+            FROM cart_items
+            WHERE cart_id = ?
+          `);
+        cart.items = await new Promise((resolve, reject) => {
+          cartItemsStatement.all(cart.id, userId, (err, row) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(row);
+          });
+        });
+        this.finalize(cartItemsStatement, false);
+        return cart;
+      } else {
+        this.finalize(statement);
+        return undefined;
+      }
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async create(userId) {
+    this.open();
+    try {
+      const insertStmt = this.db.prepare(`
           INSERT INTO carts(user_id)
           VALUES (?)
         `);
-        const result = await insertStmt.run(userId);
-        const cartId = result.lastInsertRowid;
-        crt = cartId;
-        insertStmt.finalize();
-        
-        this.db.close();
 
-        return crt;
+      const id = await new Promise((resolve, reject) => {
+        insertStmt.run(userId, (err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(this.lastID);
+        });
+      });
+
+      this.finalize(insertStmt);
+
+      return id;
+    } catch (err) {
+      console.log(err);
+      throw err;
     }
+  }
 
-    createCartItem(cartId, productId, price, quantity) {
-        return new Promise((resolve, reject) => {
-            const statement = this.db.prepare(`
+  async createCartItem(cartId, productId, price, quantity) {
+    this.open();
+    try {
+      const insertStmt = this.db.prepare(`
                 INSERT INTO cart_items (cart_id, product_id, price, quantity)
                 VALUES (?, ?, ?, ?)
             `);
-            statement.run(cartId, productId, price, quantity, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
-            });
-        });
-    }
 
-    delete(id) {
-        return new Promise((resolve, reject) => {
-            const statement = this.db.prepare(`
-                DELETE
-                FROM carts
-                WHERE id = ?
-            `);
-            statement.run(id, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
-            });
+      const id = await new Promise((resolve, reject) => {
+        insertStmt.run(cartId, productId, price, quantity, (err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(this.lastID);
         });
+      });
+
+      this.finalize(insertStmt);
+
+      return id;
+    } catch (err) {
+      console.log(err);
+      throw err;
     }
+  }
+
+  async delete(id) {
+    this.open();
+    try {
+      const statement = this.db.prepare(`
+      DELETE
+      FROM carts
+      WHERE id = ?
+  `);
+      statement.run(id);
+
+      this.finalize(statement);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
 }
 
 module.exports = CartModel;

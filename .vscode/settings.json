@@ -1,0 +1,25 @@
+{
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default"
+      },
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 32768,
+      "driver": "MySQL",
+      "name": "Local DB",
+      "group": "Local",
+      "database": "extr_main",
+      "username": "root",
+      "password": "mysqlpw"
+    },
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "express-shop",
+      "database": "${workspaceFolder:express-shop}/db.sqlite3"
+    }
+  ]
+}

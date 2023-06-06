@@ -1,205 +1,296 @@
+const { reject } = require("bluebird");
+const { TOOBIG } = require("sqlite3");
+
 class ProductModel {
-    constructor() {
-        this.db = require('../database/database').db();
+  constructor() {
+    this.open();
+  }
+
+  open() {
+    if (!this.db || (this.db && !this.db.open)) {
+      this.db = require("../database/database").db("ProductModel");
     }
+  }
 
-    createTable() {
-        console.log('Creating product table...')
-        const productsTableStatement = this.db.prepare(`
-            CREATE TABLE IF NOT EXISTS "products"
-            (
-                "id"          INTEGER PRIMARY KEY AUTOINCREMENT,
-                "name"        string,
-                "description" string,
-                "price"       float,
-                "thumbnail"   string
-            );
-        `);
+  close() {
+    this.db.close((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Product Model: Database connection closed.");
+      }
+    });
+  }
 
-        const productImagesTableStatement = this.db.prepare(`
-            CREATE TABLE IF NOT EXISTS "product_images"
-            (
-                "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
-                "image"      string,
-                "product_id" int,
-                FOREIGN KEY ("product_id") REFERENCES products ("id")
-            );
-        `);
-        productsTableStatement.run();
-        productImagesTableStatement.run();
-    }
+  finalize(stmt, close = true) {
+    stmt.finalize((err) => {
+      if (err) {
+        console.log(err);
+      }
+      if (close) {
+        this.close();
+      }
+    });
+  }
 
-    getAll(withGallery = false) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`SELECT *
-                                          FROM products`);
-            stmt.all(async (err, rows) => {
-                if (err) {
-                    reject(err);
-                }
-                if (withGallery) {
-                    for (const rowKey in rows) {
-                        rows[rowKey].gallery = await new Promise((resolve, reject) => {
-                            this.db.prepare(`
-                                SELECT *
-                                from product_images
-                                WHERE product_id = ?
-                            `).all(rows[rowKey].id, (err, images) => {
-                                if (err) {
-                                    reject(err);
-                                }
-                                resolve(images);
-                            });
-                        });
-                    }
-                }
-                resolve(rows);
-            });
+  createTable() {
+    this.db.serialize(() => {
+      const productsTableStatement = this.db.prepare(`
+        CREATE TABLE IF NOT EXISTS "products"
+        (
+          "id"          INTEGER PRIMARY KEY AUTOINCREMENT,
+          "name"        string,
+          "description" string,
+          "price"       float,
+          "thumbnail"   string
+        );
+      `);
+
+      productsTableStatement.run((err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("products table created successfully.");
+        }
+      });
+      this.finalize(productsTableStatement, false);
+
+      const productImagesTableStatement = this.db.prepare(`
+        CREATE TABLE IF NOT EXISTS "product_images"
+        (
+          "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
+          "image"      string,
+          "product_id" int,
+          FOREIGN KEY ("product_id") REFERENCES products ("id")
+        );
+      `);
+      productImagesTableStatement.run((err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("product_images table created successfully.");
+        }
+      });
+      this.finalize(productImagesTableStatement);
+    });
+  }
+
+  async getAll(withGallery = false) {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`SELECT *
+      FROM products`);
+      const rows = await new Promise((resolve, reject) => {
+        stmt.all((err, rows) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(rows);
         });
-    }
+      });
 
-    get(id) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                SELECT *
-                FROM products
-                WHERE id = ?
-            `);
-            return stmt.get(id, (err, row) => {
-                if (err) {
-                    reject(err);
-                }
-                this.db.prepare(`
-                    SELECT *
-                    FROM product_images
-                    WHERE product_id = ?
-                `).all(id, (err, rows) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    row.gallery = rows;
-                    resolve(row);
-                })
-            });
-        });
-    }
+      if (withGallery) {
+        for (const row of rows) {
+          const images = await this.getProductImages(row.id);
+          row.gallery = images;
+        }
+      }
 
-    async getGalleryImage(id) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                SELECT *
-                FROM product_images
-                WHERE id = ?
-            `);
-            return stmt.get(id, (err, row) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(row);
-            });
-        });
-    }
+      this.finalize(stmt);
 
-    getWhere(where) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                SELECT *
-                FROM products
-                WHERE ${where}
-            `);
-            return stmt.get((err, row) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(row);
-            });
-        });
+      return rows;
+    } catch (err) {
+      console.error(err);
+      return null;
     }
+  }
 
-    create(product) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                INSERT INTO products(name, description, price, thumbnail)
-                VALUES (?, ?, ?, ?)
-            `);
-            stmt.run(product.name, product.description, product.price, product.thumbnail, (err) => {
-                if (err) {
-                    reject(err);
-                }
-            });
-            this.db.prepare(`SELECT last_insert_rowid() AS id`).get((err, row) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(row.id);
-            });
+  async getProductImages(productId) {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`
+        SELECT *
+        FROM product_images
+        WHERE product_id = ?
+      `);
+      const gallery = await new Promise((resolve, reject) => {
+        stmt.all(productId, (err, rows) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(rows);
         });
+      });
+      this.finalize(stmt);
+      return gallery;
+    } catch (err) {
+      console.error(err);
+      return null;
     }
+  }
 
-    addGalleryImage(product_id, image) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                INSERT INTO product_images(image, product_id)
-                VALUES (?, ?)
-            `);
-            stmt.run(image, product_id, (err) => {
-                if (err) {
-                    reject(err);
-                }
-            });
-        });
+  async get(id) {
+    try {
+      const product = await this.getProductById(id);
+      product.gallery = await this.getProductImages(id);
+      return product;
+    } catch (err) {
+      console.error(err);
+      return null;
     }
+  }
 
-    update(productId, product) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                UPDATE products
-                SET name        = ?,
-                    description = ?,
-                    price       = ?,
-                    thumbnail   = ?
-                WHERE id = ?
-            `);
-            return stmt.run(product.name, product.description, product.price, product.thumbnail, productId, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
-            });
+  async getProductById(id) {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`
+        SELECT *
+        FROM products
+        WHERE id = ?
+      `);
+      const product = await new Promise((resolve, reject) => {
+        stmt.get(id, (err, row) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(row);
         });
+      });
+      this.finalize(stmt);
+      return product;
+    } catch (err) {
+      console.error(err);
+      return null;
     }
+  }
 
-    delete(id) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                DELETE
-                FROM products
-                WHERE id = ?
-            `);
-            return stmt.run(id, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
-            });
-        });
-    }
+  async create(product) {
+    this.open();
+    try {
+      const insertStmt = this.db.prepare(`
+        INSERT INTO products(name, description, price, thumbnail)
+        VALUES (?, ?, ?, ?)
+      `);
 
-    async deleteGalleryImage(id) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                DELETE
-                FROM product_images
-                WHERE id = ?
-            `);
-            return stmt.run(id, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
-            });
-        });
+      const id = await new Promise((resolve, reject) => {
+        insertStmt.run(
+          product.name,
+          product.description,
+          product.price,
+          product.thumbnail,
+          (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(this.lastID);
+          }
+        );
+      });
+
+      this.finalize(insertStmt);
+
+      return id;
+    } catch (err) {
+      console.log(err);
+      throw err;
     }
+  }
+
+  async addGalleryImage(product_id, image) {
+    this.open();
+    try {
+      const insertStmt = this.db.prepare(`
+        INSERT INTO product_images(image, product_id)
+        VALUES (?, ?)
+      `);
+
+      const id = await new Promise((resolve, reject) => {
+        insertStmt.run(image, product_id, (err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(this.lastID);
+        });
+      });
+
+      this.finalize(insertStmt);
+
+      return id;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async update(productId, product) {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE products
+        SET name      = ?,
+          description = ?,
+          price       = ?,
+          thumbnail   = ?
+        WHERE id = ?
+      `);
+
+      const id = await new Promise((resolve, reject) => {
+        stmt.run(
+          product.name,
+          product.description,
+          product.price,
+          product.thumbnail,
+          productId,
+          (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(this.lastID);
+          }
+        );
+      });
+
+      this.finalize(stmt);
+      return id;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  delete(id) {
+    this.open();
+    try {
+      const statement = this.db.prepare(`
+        DELETE
+        FROM products
+        WHERE id = ?
+      `);
+      statement.run(id);
+
+      this.finalize(statement);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async deleteGalleryImage(id) {
+    this.open();
+    try {
+      const statement = this.db.prepare(`
+        DELETE
+        FROM product_images
+        WHERE id = ?
+      `);
+      statement.run(id);
+
+      this.finalize(statement);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
 }
 
 module.exports = ProductModel;

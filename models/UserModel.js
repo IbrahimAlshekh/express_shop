@@ -1,15 +1,39 @@
-const crypto = require('crypto');
-const e = require("express");
-const {getPasswordHash} = require("../lib/utils");
+const { getPasswordHash } = require("../lib/utils");
 
 class UserModel {
-    constructor() {
-        this.db = require('../database/database').db();
-    }
+  constructor() {
+    this.open();
+  }
 
-    createTable() {
-        console.log('Creating user table...')
-        const usesTableStatement = this.db.prepare(`
+  open() {
+    if (!this.db || (this.db && !this.db.open)) {
+      this.db = require("../database/database").db("UserModel");
+    }
+  }
+
+  close() {
+    this.db.close((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("User model: Database connection closed.");
+      }
+    });
+  }
+
+  finalize(stmt, close = true) {
+    stmt.finalize((err) => {
+      if (err) {
+        console.log(err);
+      }
+      if (close) {
+        this.close();
+      }
+    });
+  }
+
+  createTable() {
+    const usesTableStatement = this.db.prepare(`
             CREATE TABLE IF NOT EXISTS "users"
             (
                 "id"            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,88 +46,187 @@ class UserModel {
                 "is_admin"      boolean
             );
         `);
-        usesTableStatement.run();
-    }
+    usesTableStatement.run((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("users table created successfully.");
+      }
+    });
+    this.finalize(usesTableStatement);
+  }
 
-    getAll() {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`SELECT *
-                                          FROM users`);
-            stmt.all((err, rows) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(rows);
-            });
+  async getAll() {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`SELECT * FROM users`);
+      const users = await new Promise((resolve, reject) => {
+        stmt.all((err, rows) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(rows);
         });
-    }
+      });
 
-    get(id) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                SELECT *
-                FROM users
-                WHERE id = ?
-            `);
-            return stmt.get(id, (err, row) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(row);
-            });
+      this.finalize(stmt);
+
+      return users;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
+
+  async get(id) {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`SELECT * FROM users WHERE id = ?`);
+      const user = await new Promise((resolve, reject) => {
+        stmt.get(id, (err, row) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(row);
         });
-    }
+      });
 
-    authenticate(username, password) {
-        return new Promise((resolve, reject) => {
-            const stmt = this.db.prepare(`
-                SELECT *
-                FROM users
-                WHERE (username = ? or email = ?)
-                  AND password = ?
-            `);
-            console.log(username, password, getPasswordHash(password), stmt)
-            return stmt.get(username ?? null, username ?? null, getPasswordHash(password), (err, row) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(row);
-            });
-        });
-    }
+      this.finalize(stmt);
 
-    create(user) {
-        const stmt = this.db.prepare(`
-            INSERT INTO users (first_name, last_name, username, email, password, profile_image, is_admin)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        `);
-        stmt.run(user.first_name ?? null, user.last_name ?? null, user.username, user.email, getPasswordHash(user.password), user.profile_image ?? null, user.is_admin ?? 0);
+      return user;
+    } catch (err) {
+      console.error(err);
+      return null;
     }
+  }
 
-    update(userId, userData) {
-        const password = userData.password ? `password = '${getPasswordHash(userData.password)}',` : '';
-        const stmt = this.db.prepare(`
-            UPDATE users
-            SET first_name    = ?,
-                last_name     = ?,
-                username      = ?,
-                email         = ?,
-                profile_image = ?,
-                ${password} 
-                is_admin      = ?
-            WHERE id = ?
-        `);
-        stmt.run(userData.first_name, userData.last_name, userData.username, userData.email, userData.profile_image, userData.is_admin, userId);
-    }
+  async authenticate(username, password) {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`
+        SELECT *
+        FROM users
+        WHERE (username = ? or email = ?)
+        AND password = ?
+      `);
+      const user = await new Promise((resolve, reject) => {
+        stmt.get(
+          username ?? null,
+          username ?? null,
+          getPasswordHash(password),
+          (err, row) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(row);
+          }
+        );
+      });
 
-    delete(id) {
-        const stmt = this.db.prepare(`
-            DELETE
-            FROM users
-            WHERE id = ?
-        `);
-        stmt.run(id);
+      this.finalize(stmt);
+
+      return user;
+    } catch (err) {
+      console.error(err);
+      return null;
     }
+  }
+
+  async create(user) {
+    this.open();
+    try {
+      const insertStmt = this.db.prepare(`
+        INSERT INTO users (first_name, last_name, username, email, password, profile_image, is_admin)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const id = await new Promise((resolve, reject) => {
+        insertStmt.run(
+          user.first_name ?? null,
+          user.last_name ?? null,
+          user.username,
+          user.email,
+          getPasswordHash(user.password),
+          user.profile_image ?? null,
+          user.is_admin ?? 0,
+          (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(this.lastID);
+          }
+        );
+      });
+
+      this.finalize(insertStmt);
+
+      return id;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async update(userId, userData) {
+    this.open();
+    try {
+      const password = userData.password
+        ? `password = '${getPasswordHash(userData.password)}',`
+        : "";
+      const stmt = this.db.prepare(`
+        UPDATE users
+        SET first_name    = ?,
+          last_name     = ?,
+          username      = ?,
+          email         = ?,
+          profile_image = ?,
+          ${password} 
+          is_admin      = ?
+        WHERE id = ?
+      `);
+
+      const id = await new Promise((resolve, reject) => {
+        stmt.run(
+          userData.first_name,
+          userData.last_name,
+          userData.username,
+          userData.email,
+          userData.profile_image,
+          userData.is_admin,
+          userId,
+          (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(this.lastID);
+          }
+        );
+      });
+
+      this.finalize(stmt);
+      return id;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  delete(id) {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`
+        DELETE
+        FROM users
+        WHERE id = ?
+      `);
+      stmt.run(id);
+
+      this.finalize(statement);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
 }
 
 module.exports = UserModel;
