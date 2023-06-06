@@ -14,7 +14,7 @@ class UserModel {
   close() {
     this.db.close((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       } else {
         console.log("User model: Database connection closed.");
       }
@@ -24,7 +24,7 @@ class UserModel {
   finalize(stmt, close = true) {
     stmt.finalize((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       }
       if (close) {
         this.close();
@@ -48,7 +48,7 @@ class UserModel {
         `);
     usesTableStatement.run((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       } else {
         console.log("users table created successfully.");
       }
@@ -63,7 +63,7 @@ class UserModel {
       const users = await new Promise((resolve, reject) => {
         stmt.all((err, rows) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(rows);
         });
@@ -73,7 +73,7 @@ class UserModel {
 
       return users;
     } catch (err) {
-      console.error(err);
+      console.error(__filename + ": " + err);
       return null;
     }
   }
@@ -85,7 +85,7 @@ class UserModel {
       const user = await new Promise((resolve, reject) => {
         stmt.get(id, (err, row) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(row);
         });
@@ -95,7 +95,7 @@ class UserModel {
 
       return user;
     } catch (err) {
-      console.error(err);
+      console.error(__filename + ": " + err);
       return null;
     }
   }
@@ -116,7 +116,7 @@ class UserModel {
           getPasswordHash(password),
           (err, row) => {
             if (err) {
-              reject(err);
+              reject(__filename + ":" + err);
             }
             resolve(row);
           }
@@ -127,7 +127,7 @@ class UserModel {
 
       return user;
     } catch (err) {
-      console.error(err);
+      console.error(__filename + ": " + err);
       return null;
     }
   }
@@ -151,7 +151,7 @@ class UserModel {
           user.is_admin ?? 0,
           (err) => {
             if (err) {
-              reject(err);
+              reject(__filename + ":" + err);
             }
             resolve(this.lastID);
           }
@@ -162,7 +162,7 @@ class UserModel {
 
       return id;
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -196,7 +196,7 @@ class UserModel {
           userId,
           (err) => {
             if (err) {
-              reject(err);
+              reject(__filename + ":" + err);
             }
             resolve(this.lastID);
           }
@@ -206,7 +206,7 @@ class UserModel {
       this.finalize(stmt);
       return id;
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -223,7 +223,7 @@ class UserModel {
 
       this.finalize(statement);
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }

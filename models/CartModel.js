@@ -12,7 +12,7 @@ class CartModel {
   close() {
     this.db.close((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       } else {
         console.log("Cart Model: Database connection closed.");
       }
@@ -22,7 +22,7 @@ class CartModel {
   finalize(stmt, close = true) {
     stmt.finalize((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       }
       if (close) {
         this.close();
@@ -42,7 +42,7 @@ class CartModel {
         `);
       cartsTableStatement.run((err) => {
         if (err) {
-          console.log(err);
+          console.log(__filename + ":" + err);
         } else {
           console.log("carts table created successfully.");
         }
@@ -64,7 +64,7 @@ class CartModel {
         `);
       cartItemsTableSql.run((err) => {
         if (err) {
-          console.log(err);
+          console.log(__filename + ":" + err);
         } else {
           console.log("cart_items table created successfully.");
         }
@@ -75,8 +75,8 @@ class CartModel {
   }
 
   async get(userId) {
-    this.open();
     try {
+      this.open();
       const statement = this.db.prepare(`
         SELECT *
         FROM carts
@@ -85,13 +85,12 @@ class CartModel {
       const cart = await new Promise((resolve, reject) => {
         statement.get(userId, (err, row) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(row);
         });
       });
 
-      console.log("cart:", cart);
       if (cart) {
         cart.items = await this.getCartItems(cart.id);
         return cart;
@@ -100,7 +99,7 @@ class CartModel {
         return undefined;
       }
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -116,7 +115,7 @@ class CartModel {
       cartItemsStatement.all(cartId, (err, row) => {
         console.log("cart items:", row);
         if (err) {
-          reject(err);
+          reject(__filename + ":" + err);
         }
         resolve(row);
       });
@@ -126,8 +125,8 @@ class CartModel {
   }
 
   async create(userId) {
-    this.open();
     try {
+      this.open();
       const insertStmt = this.db.prepare(`
           INSERT INTO carts(user_id)
           VALUES (?)
@@ -136,7 +135,7 @@ class CartModel {
       const id = await new Promise((resolve, reject) => {
         insertStmt.run(userId, (err) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(this.lastID);
         });
@@ -146,7 +145,7 @@ class CartModel {
 
       return id;
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -162,7 +161,7 @@ class CartModel {
       const id = await new Promise((resolve, reject) => {
         insertStmt.run(cartId, productId, price, quantity, (err) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(this.lastID);
         });
@@ -172,7 +171,7 @@ class CartModel {
 
       return id;
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -189,7 +188,7 @@ class CartModel {
 
       this.finalize(statement);
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }

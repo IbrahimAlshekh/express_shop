@@ -12,7 +12,7 @@ class OrderModel {
   close() {
     this.db.close((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       } else {
         console.log("Order Model: Database connection closed.");
       }
@@ -22,7 +22,7 @@ class OrderModel {
   finalize(stmt, close = true) {
     stmt.finalize((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       }
       if (close) {
         this.close();
@@ -47,7 +47,7 @@ class OrderModel {
 
       ordersTableStatement.run((err) => {
         if (err) {
-          console.log(err);
+          console.log(__filename + ":" + err);
         } else {
           console.log("orders table created successfully.");
         }
@@ -69,7 +69,7 @@ class OrderModel {
       `);
       orderItemsTableStatement.run((err) => {
         if (err) {
-          console.log(err);
+          console.log(__filename + ":" + err);
         } else {
           console.log("order_items table created successfully.");
         }

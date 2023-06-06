@@ -12,7 +12,7 @@ class ProductModel {
   close() {
     this.db.close((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       } else {
         console.log("Product Model: Database connection closed.");
       }
@@ -22,7 +22,7 @@ class ProductModel {
   finalize(stmt, close = true) {
     stmt.finalize((err) => {
       if (err) {
-        console.log(err);
+        console.log(__filename + ":" + err);
       }
       if (close) {
         this.close();
@@ -45,7 +45,7 @@ class ProductModel {
 
       productsTableStatement.run((err) => {
         if (err) {
-          console.log(err);
+          console.log(__filename + ":" + err);
         } else {
           console.log("products table created successfully.");
         }
@@ -63,7 +63,7 @@ class ProductModel {
       `);
       productImagesTableStatement.run((err) => {
         if (err) {
-          console.log(err);
+          console.log(__filename + ":" + err);
         } else {
           console.log("product_images table created successfully.");
         }
@@ -80,7 +80,7 @@ class ProductModel {
       const rows = await new Promise((resolve, reject) => {
         stmt.all((err, rows) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(rows);
         });
@@ -97,7 +97,7 @@ class ProductModel {
 
       return rows;
     } catch (err) {
-      console.error(err);
+      console.error(__filename + ": " + err);
       return null;
     }
   }
@@ -113,26 +113,28 @@ class ProductModel {
       const gallery = await new Promise((resolve, reject) => {
         stmt.all(productId, (err, rows) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(rows);
         });
       });
-      this.finalize(stmt);
+      this.finalize(stmt, false);
       return gallery;
     } catch (err) {
-      console.error(err);
+      console.error(__filename + ": " + err);
       return null;
     }
   }
 
   async get(id) {
+    this.open();
     try {
       const product = await this.getProductById(id);
       product.gallery = await this.getProductImages(id);
+      this.close();
       return product;
     } catch (err) {
-      console.error(err);
+      console.error(__filename + ": " + err);
       return null;
     }
   }
@@ -148,15 +150,15 @@ class ProductModel {
       const product = await new Promise((resolve, reject) => {
         stmt.get(id, (err, row) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(row);
         });
       });
-      this.finalize(stmt);
+      this.finalize(stmt, false);
       return product;
     } catch (err) {
-      console.error(err);
+      console.error(__filename + ": " + err);
       return null;
     }
   }
@@ -177,7 +179,7 @@ class ProductModel {
           product.thumbnail,
           (err) => {
             if (err) {
-              reject(err);
+              reject(__filename + ":" + err);
             }
             resolve(this.lastID);
           }
@@ -188,7 +190,7 @@ class ProductModel {
 
       return id;
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -204,7 +206,7 @@ class ProductModel {
       const id = await new Promise((resolve, reject) => {
         insertStmt.run(image, product_id, (err) => {
           if (err) {
-            reject(err);
+            reject(__filename + ":" + err);
           }
           resolve(this.lastID);
         });
@@ -214,7 +216,7 @@ class ProductModel {
 
       return id;
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -240,7 +242,7 @@ class ProductModel {
           productId,
           (err) => {
             if (err) {
-              reject(err);
+              reject(__filename + ":" + err);
             }
             resolve(this.lastID);
           }
@@ -250,7 +252,7 @@ class ProductModel {
       this.finalize(stmt);
       return id;
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -267,7 +269,7 @@ class ProductModel {
 
       this.finalize(statement);
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
@@ -284,7 +286,7 @@ class ProductModel {
 
       this.finalize(statement);
     } catch (err) {
-      console.log(err);
+      console.log(__filename + ":" + err);
       throw err;
     }
   }
