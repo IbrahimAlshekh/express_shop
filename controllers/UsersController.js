@@ -1,12 +1,42 @@
 const { UserModel } = require("../models");
 const { deleteImage, storeImage } = require("../lib/utils");
+const AuthController = require("./AuthController");
 
 class UsersController {
   static async index(req, res, next) {
+    if(!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
     const user = new UserModel();
     res.render("admin/users/index", {
       title: "users",
       users: await user.getAll(),
+    });
+  }
+
+  static async showProfile(req, res, next) {
+    if(!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
+    const user = new UserModel();
+    const userData = await user.get(req.params.id);
+    user.close();
+    res.render("users/profile", {
+      title: "users",
+      user: userData,
+    });
+  }
+
+  static async editProfile(req, res, next) {
+    if(!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
+    const user = new UserModel();
+    const userData = await user.get(req.params.id);
+    user.close();
+    res.render("users/editprofile", {
+      title: "users",
+      user: userData,
     });
   }
 
@@ -24,7 +54,7 @@ class UsersController {
 
   static async store(req, res, next) {
     try {
-      const { first_name, last_name, username, email, password, is_admin } =
+      const {action,user_id, first_name, last_name, username, email, password, is_admin } =
         req.body;
       const profileImage = req?.files?.profile_image;
       let profileImageName = await storeImage(
@@ -49,7 +79,12 @@ class UsersController {
         await user.update(req.body.id, userData);
       }
 
+      if(action === "edit") {
+
       res.redirect("/admin/users");
+      } else if(action === "edit_profile") {
+        res.redirect("/users/" + req.body.user_id + "/profile");
+      }
     } catch (err) {
       console.log(__filename + ":" + err);
       next(err);
