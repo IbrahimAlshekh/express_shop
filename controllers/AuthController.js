@@ -21,6 +21,7 @@ class AuthController {
         error: "Invalid credentials",
       });
     }
+    userModel.close();
   }
 
   static signup(req, res, next) {

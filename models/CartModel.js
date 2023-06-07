@@ -27,9 +27,6 @@ class CartModel {
       if (err) {
         console.log(__filename + ":" + err);
       }
-      if (close) {
-        // this.close();
-      }
     });
   }
 
@@ -94,11 +91,12 @@ class CartModel {
         });
       });
 
+      this.finalize(statement);
+
       if (cart) {
         cart.items = await this.getCartItems(cart.id);
         return cart;
       } else {
-        this.finalize(statement);
         return undefined;
       }
     } catch (err) {

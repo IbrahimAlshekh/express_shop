@@ -55,6 +55,7 @@ class ProductController {
 
       req.session.user.cart = await cartModel.get(cartId);
 
+      cartModel.close();
       if (source === "product") {
         res.redirect(`/products/${product_id}`);
       } else if (source === "products") {
@@ -81,56 +82,54 @@ class ProductController {
   }
 
   static async store(req, res, next) {
-    let thumbnail = storeImage(
-      req?.files?.thumbnail,
-      res.locals.base_dir + "/public/images/"
-    );
-    const product = new ProductModel();
-    let productId = null;
-    if (req.body.action === "create") {
-      productId = await product.create({
-        name: req.body.name,
-        description: req.body.description,
-        thumbnail: thumbnail ?? "",
-        price: parseFloat(req.body.price),
-      });
-    } else if (req.body.action === "edit") {
-      productId = req.body.id;
-      product.update(req.body.id, {
-        name: req.body.name,
-        description: req.body.description,
-        thumbnail: thumbnail ?? req.body.current_thumbnail_name,
-        price: parseFloat(req.body.price),
-      });
-    }
+    try {
+      const { name, description, price } = req.body;
+      const thumbnail = await storeImage(
+        req?.files?.thumbnail,
+        res.locals.base_dir + "/public/images/"
+      );
+      const product = new ProductModel();
+      let productId = null;
 
-    if (req.files) {
-      if (isIterable(req.files.gallery)) {
-        for (let file of req.files.gallery ?? []) {
-          let galleryImage = storeImage(
-            file,
-            res.locals.base_dir + "/public/images/"
-          );
-          if (galleryImage) {
-            product.addGalleryImage(productId, galleryImage);
-          }
-        }
-      } else {
-        let galleryImage = storeImage(
-          req.files.gallery,
+      if (req.body.action === "create") {
+        productId = await product.create({
+          name,
+          description,
+          thumbnail: thumbnail || "",
+          price: parseFloat(price),
+        });
+      } else if (req.body.action === "edit") {
+        productId = req.body.id;
+        await product.update(req.body.id, {
+          name,
+          description,
+          thumbnail: thumbnail || req.body.current_thumbnail_name,
+          price: parseFloat(price),
+        });
+      }
+
+      const galleryImages = Array.isArray(req.files.gallery)
+        ? req.files.gallery
+        : [req.files.gallery];
+      for (const file of galleryImages) {
+        const galleryImage = await storeImage(
+          file,
           res.locals.base_dir + "/public/images/"
         );
         if (galleryImage) {
-          product.addGalleryImage(productId, galleryImage);
+          await product.addGalleryImage(productId, galleryImage);
         }
       }
-    }
 
-    res.redirect(
-      req.body.action === "edit"
-        ? "/admin/products/edit/" + productId
-        : "/admin/products"
-    );
+      const redirectUrl =
+        req.body.action === "edit"
+          ? "/admin/products/edit/" + productId
+          : "/admin/products";
+      res.redirect(redirectUrl);
+    } catch (err) {
+      console.log(__filename + ":" + err);
+      next(err);
+    }
   }
 
   static async delete(req, res, next) {

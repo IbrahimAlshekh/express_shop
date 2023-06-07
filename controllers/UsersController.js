@@ -1,5 +1,5 @@
 const { UserModel } = require("../models");
-const { deleteImage } = require("../lib/utils");
+const { deleteImage, storeImage } = require("../lib/utils");
 
 class UsersController {
   static async index(req, res, next) {
@@ -22,61 +22,37 @@ class UsersController {
     res.render("admin/users/create", { title: "users", user: {} });
   }
 
-  static store(req, res, next) {
-    let errors = [];
-    let profileImage = req?.files?.profile_image;
-    let newImageName = null;
-    if (profileImage) {
-      newImageName = new Date().getTime() + "_" + profileImage.name;
-      new Promise((resolve, reject) => {
-        profileImage?.mv(
-          res.locals.base_dir + "/public/images/" + newImageName,
-          (err) => {
-            if (err) {
-              reject(__filename + ":" + err);
-            }
-          }
-        );
-      })
-        .then(() => {})
-        .catch(() => {
-          errors.push({
-            profileImage:
-              "Error: there was a problem uploading the profile image",
-          });
-        });
-    }
+  static async store(req, res, next) {
+    try {
+      const { first_name, last_name, username, email, password, is_admin } =
+        req.body;
+      const profileImage = req?.files?.profile_image;
+      let profileImageName = await storeImage(
+        profileImage,
+        res.locals.base_dir + "/public/images/"
+      );
 
-    const user = new UserModel();
-    if (req.body.action === "create") {
-      user.create({
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
-        profile_image: newImageName ?? "",
-        is_admin: req.body.is_admin === "on" ? 1 : 0,
-      });
-    } else if (req.body.action === "edit") {
-      user.update(req.body.id, {
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        username: req.body.username,
-        email: req.body.email,
-        profile_image: newImageName ?? req.body.profile_image_name,
-        is_admin: req.body.is_admin === "on" ? 1 : 0,
-      });
-    }
+      const user = new UserModel();
+      const userData = {
+        first_name,
+        last_name,
+        username,
+        email,
+        password,
+        profile_image: profileImageName,
+        is_admin: is_admin === "on" ? 1 : 0,
+      };
 
-    if (errors.length > 0) {
-      res.render("admin/users/" + req.body.action, {
-        title: "users",
-        error: errors.length > 0 ? JSON.stringify(errors) : "",
-        user: {},
-      });
-    } else {
+      if (req.body.action === "create") {
+        await user.create(userData);
+      } else if (req.body.action === "edit") {
+        await user.update(req.body.id, userData);
+      }
+
       res.redirect("/admin/users");
+    } catch (err) {
+      console.log(__filename + ":" + err);
+      next(err);
     }
   }
 
@@ -84,7 +60,7 @@ class UsersController {
     const user = new UserModel();
     const productData = await user.get(req.params.id);
     deleteImage(res.locals.image_dir + productData.profile_image);
-    await user.delete(req.params.id);
+    user.delete(req.params.id);
     res.redirect("/admin/users");
   }
 }
