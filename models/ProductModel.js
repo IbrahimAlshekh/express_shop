@@ -286,6 +286,32 @@ class ProductModel {
       throw err;
     }
   }
+
+  async search(query) {
+    this.open();
+    try {
+      const stmt = this.db.prepare(`
+        SELECT *
+        FROM products
+        WHERE name LIKE ?
+      `);
+      const rows = await new Promise((resolve, reject) => {
+        stmt.all(`%${query}%`, (err, rows) => {
+          if (err) {
+            reject(__filename + ":" + err);
+          }
+          resolve(rows);
+        });
+      });
+
+      this.finalize(stmt);
+
+      return rows || [];
+    } catch (err) {
+      console.error(__filename + ": " + err);
+      return null;
+    }
+  }
 }
 
 module.exports = ProductModel;

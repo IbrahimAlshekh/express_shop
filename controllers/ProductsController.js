@@ -19,6 +19,16 @@ class ProductController {
     });
   }
 
+  static async search(req, res, next) {
+    const product = new ProductModel();
+    const products = await product.search(req.query.q);
+    product.close();
+    res.render("products/search_list", {
+      title: "Search results",
+      products
+    });
+  }
+
   static async show(req, res, next) {
     const product = new ProductModel();
     const pickedProduct = await product.get(req.params.id);
