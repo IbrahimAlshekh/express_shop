@@ -19,7 +19,11 @@
       <td><%= item.product.id %></td>
       <td><%= item.product.name %></td>
       <td>
-        <form id="update_form_<%= item.product_id %>" method="post" action="/users/<%= user.id %>/cart">
+        <form
+          id="update_form_<%= item.product_id %>"
+          method="post"
+          action="/users/<%= user.id %>/cart"
+        >
           <input
             type="hidden"
             name="product_id"
@@ -37,16 +41,22 @@
             max="100"
           />
           <span>
-            <i id="refresher_<%= item.product_id %>" class="bi bi-arrow-repeat fs-5 text-primary d-none" 
+            <i
+              id="refresher_<%= item.product_id %>"
+              class="bi bi-arrow-repeat fs-5 text-primary d-none"
               onclick="document.getElementById('update_form_<%= item.product_id %>').submit()"
-              style="cursor: pointer;"
-              ></i>
+              style="cursor: pointer"
+            ></i>
           </span>
         </form>
       </td>
       <td><%= item.price %>$</td>
       <td>
-        <form id="delete_form_<%= item.product_id %>" method="post" action="/users/<%= user.id %>/cart">
+        <form
+          id="delete_form_<%= item.product_id %>"
+          method="post"
+          action="/users/<%= user.id %>/cart"
+        >
           <input type="hidden" name="cart_id" value="<%= user.cart.id %>" />
           <input type="hidden" name="action" value="delete" />
           <input
@@ -54,9 +64,10 @@
             name="product_id"
             value="<%= item.product_id %>"
           />
-          <i class="bi bi-trash text-danger" 
-          onclick="if(confirm('Are you sure?')) document.geftElementById('delete_form_<%= item.product_id %>').submit()"
-          style="cursor: pointer;"
+          <i
+            class="bi bi-trash text-danger"
+            onclick="if(confirm('Are you sure?')) document.geftElementById('delete_form_<%= item.product_id %>').submit()"
+            style="cursor: pointer"
           ></i>
         </form>
       </td>

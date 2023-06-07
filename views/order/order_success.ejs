@@ -1,4 +1,5 @@
 <%- include('../layouts/main/header', {title: 'Order success'}) %>
+<div class="h-100 d-flex flex-column justify-content-center align-items-center" style="min-height: 80vh;">
     <% if (error) { %>
         <div class="alert alert-danger py-4 my-4" role="alert">
             <i class="bi bi-exclamation-circle fs-5"></i>
@@ -10,4 +11,8 @@
             Your order has been placed successfully, please check your email for more details.<br>
         </div>
     <% } %>
+
+    <a href="/products" class="btn btn-primary d-flex justify-content-center m-4 p-2 w-75">
+        Continue shopping</a>
+</div>
 <%- include('../layouts/main/footer') %>
