@@ -124,6 +124,16 @@ class OrdersController {
         .toFixed(2),
     });
   }
+
+  static async makeOrder(req, res, next) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
+
+    console.log(req.body);
+
+    res.redirect("orders/order_success");
+  }
 }
 
 module.exports = OrdersController;
