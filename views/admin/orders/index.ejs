@@ -1,0 +1,44 @@
+<%- include('../../layouts/admin/header') %>
+
+<div class="p-4" style="min-height: 95vh">
+  <div class="d-flex justify-content-between">
+    <h3>Users list</h3>
+  </div>
+  <div class="card">
+    <div class="table-responsive text-nowrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Order date</th>
+            <th>Number</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Paymentmethod</th>
+            <th>Total prcie</th>
+          </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+          <% if(orders.length > 0) { %> <% orders.forEach(function(order){ %>
+          <tr>
+            <td>
+              <a href="/admin/orders/<%= order.id %>"> <%= order.id %></a>
+            </td>
+            <td><%= order.created_at %></td>
+            <td><%= order.number %></td>
+            <td>
+              <a href="/admin/users/edit/<%= order.user_id %>">
+                <%= order.user_id %>
+              </a>
+            </td>
+            <td><%= order.status %></td>
+            <td><%= order.paymentmethod %></td>
+            <td><%= order.total_price %></td>
+          </tr>
+          <% }) %> <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<%- include('../../layouts/admin/footer') %>

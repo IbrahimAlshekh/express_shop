@@ -10,7 +10,7 @@ class OrderModel {
   }
 
   close() {
-    this.db.close(function(err){
+    this.db.close(function (err) {
       if (err) {
         console.log(__filename + ":" + err);
       } else {
@@ -20,7 +20,7 @@ class OrderModel {
   }
 
   finalize(stmt, close = true) {
-    stmt.finalize(function(err){
+    stmt.finalize(function (err) {
       if (err) {
         console.log(__filename + ":" + err);
       }
@@ -43,7 +43,7 @@ class OrderModel {
         );
       `);
 
-      ordersTableStatement.run(function(err){
+      ordersTableStatement.run(function (err) {
         if (err) {
           console.log(__filename + ":" + err);
         } else {
@@ -65,7 +65,7 @@ class OrderModel {
           FOREIGN KEY("order_id") REFERENCES orders("id")
         );
       `);
-      orderItemsTableStatement.run(function(err){
+      orderItemsTableStatement.run(function (err) {
         if (err) {
           console.log(__filename + ":" + err);
         } else {
@@ -77,6 +77,38 @@ class OrderModel {
     });
   }
 
+  async getAll(withItems = false) {
+    try {
+      this.open();
+      const stmt = this.db.prepare(`
+        SELECT *
+        FROM orders
+        ORDER BY created_at DESC
+      `);
+      const rows = await new Promise((resolve, reject) => {
+        stmt.all(function (err, rows) {
+          if (err) {
+            reject(__filename + ":" + err);
+          }
+          resolve(rows);
+        });
+      });
+
+      if (withItems) {
+        for (const row of rows) {
+          row.items = await this.getOrderItems(row.id);
+        }
+      }
+
+      this.finalize(stmt);
+
+      return rows;
+    } catch (err) {
+      console.log(__filename + ":" + err);
+      throw err;
+    }
+  }
+
   async get(id) {
     try {
       this.open();
@@ -86,7 +118,7 @@ class OrderModel {
         WHERE id = ?
       `);
       const order = await new Promise((resolve, reject) => {
-        statement.get(id, function(err, row){
+        statement.get(id, function (err, row) {
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -117,7 +149,7 @@ class OrderModel {
         WHERE user_id = ?
       `);
       const rows = await new Promise((resolve, reject) => {
-        stmt.all(userId, function(err, rows){
+        stmt.all(userId, function (err, rows) {
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -147,7 +179,7 @@ class OrderModel {
         WHERE order_id = ?
       `);
       const orderItems = await new Promise((resolve, reject) => {
-        stmt.all(order_id, function(err, row){
+        stmt.all(order_id, function (err, row) {
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -216,7 +248,7 @@ class OrderModel {
           orderItem.product_id,
           orderItem.price,
           orderItem.quantity,
-          function(err){
+          function (err) {
             if (err) {
               reject(__filename + ":" + err);
             }
@@ -228,6 +260,22 @@ class OrderModel {
       this.finalize(insertStmt);
 
       return id;
+    } catch (err) {
+      console.log(__filename + ":" + err);
+      throw err;
+    }
+  }
+
+  async updateStatus(order_id, status) {
+    this.open();
+    try {
+      const statement = this.db.prepare(`
+        UPDATE orders 
+        SET status = ?
+        WHERE id = ?
+      `);
+
+      statement.run(status, order_id);
     } catch (err) {
       console.log(__filename + ":" + err);
       throw err;

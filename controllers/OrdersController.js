@@ -1,7 +1,81 @@
+const { LIMIT_FUNCTION_ARG } = require("sqlite3");
 const { CartModel, ProductModel, OrderModel } = require("../models");
 const AuthController = require("./AuthController");
 
 class OrdersController {
+
+  static async index(req, res, next) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
+
+    const orderModel = new OrderModel();
+    const orders = await orderModel.getAll();
+
+    res.render("admin/orders/index", {
+      title: "orders",
+      orders: orders,
+      user: req.session.user,
+    });
+  }
+
+  static async show(req, res, next) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
+
+    try {
+      const orderModel = new OrderModel();
+      const order = await orderModel.get(req.params.id);
+
+      const productModel = new ProductModel();
+      const orderItems = order.items;
+
+      for (const item of orderItems) {
+        item.product = await productModel.get(item.product_id);
+      }
+
+      order.items = orderItems;
+
+      res.render("admin/orders/order", {
+        title: "orders",
+        user: req.session.user,
+        order: order,
+        total: order.items
+          .reduce((acc, item) => {
+            return acc + item.price * item.quantity;
+          }, 0)
+          .toFixed(2),
+      });
+    } catch (err) {
+      console.log(err);
+      res.locals.error = `Something went wrong, please try again later`;
+      res.redirect(`/`);
+    }
+  }
+
+
+  static async updateOrderStatus(req, res, next) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
+    const { status } = req.body;
+    const { id } = req.params;
+
+    console.log("------------------", status, id);
+
+    const orderModel = new OrderModel();
+    try {
+      await orderModel.updateStatus(id, status);
+      res.redirect(`/admin/orders/${id}`);
+    }
+    catch (err) {
+      console.log(err);
+      res.locals.error = `Something went wrong, please try again later`;
+      res.redirect(`/`);
+    }
+  }
+
   static async addToCart(req, res, next) {
     if (!AuthController.isLoggedIn(req, res, next)) {
       return;

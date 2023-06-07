@@ -1,0 +1,66 @@
+<%- include('../../layouts/admin/header') %>
+<div class="p-4" style="min-height: 95vh">
+  <div class="d-flex justify-content-between">
+    <h3>Orders details</h3>
+  </div>
+  <div class="card">
+    <div class="p-2 border-bottom border-secondary">
+      <div>
+        <p><b>Order ID:</b> <%= order.id %></p>
+        <p><b>Order Number:</b> <%= order.number %></p>
+        <p><b>Order Date:</b> <%= order.created_at %></p>
+        <p>
+          <b>Order Status:</b>
+          <form action="/admin/orders/<%= order.id %>" method="post" id="status_form">
+            <input type="hidden" name="order_id" value="<%= order.id %>">
+            <select name="status" onchange="document.getElementById('status_form').submit()">
+              <option <%= order.status === 'pending' ? 'selected' : '' %> value="pending">Pending</option>
+              <option <%= order.status === 'processing' ? 'selected' : '' %> value="processing">Processing</option>
+              <option <%= order.status === 'completed' ? 'selected' : '' %> value="completed">Completed</option>
+              <option <%= order.status === 'cancelled' ? 'selected' : '' %> value="cancelled">Cancelled</option>
+            </select>
+          </form>
+        </p>
+      </div>
+
+      <hr />
+      <h4>Order items</h4>
+    </div>
+    <% if (order.items.length > 0){ %>
+    <div class="">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Product Name</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% order.items.forEach(function (item){ %>
+          <tr>
+            <td><%= item.product_id %></td>
+            <td><%= item.product.name %></td>
+            <td><%= item.quantity %></td>
+            <td><%= item.price %>$</td>
+          </tr>
+          <% }); %>
+          <tr class="border-bottom border-secondary"></tr>
+          <tr>
+            <td>Total</td>
+            <td></td>
+            <td></td>
+            <td><%= total %>$</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %>
+    <div class="alert alert-info py-4 my-4" role="alert">
+      Your cart is empty, please add some products to your cart.
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../../layouts/admin/footer') %>

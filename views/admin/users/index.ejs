@@ -1,59 +1,64 @@
 <%- include('../../layouts/admin/header') %>
 <div class="p-4" style="min-height: 95vh">
+  <div class="d-flex justify-content-between">
+    <h3>Users list</h3>
     <a href="/admin/users/create" class="btn btn-primary mb-3">Create User</a>
-    <div class="card">
-        <div class="table-responsive text-nowrap">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Firstname</th>
-                    <th>Lastname</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Is Admin</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody class="table-border-bottom-0">
-                <% if(users.length > 0) { %>
-                    <% users.forEach(function(user){ %>
-                        <tr>
-                            <td><%= user.id %></td>
-                            <td><%= user.first_name %></td>
-                            <td><%= user.last_name %></td>
-                            <td><%= user.username %></td>
-                            <td><%= user.email %></td>
-                            <td><%= user.is_admin %></td>
-                            <td>
-                                <a href="/admin/users/edit/<%= user.id %>"><i class="bi bi-pencil-square"></i></a>
-                                <i onclick="if(confirm('Are you sure?')) deleteUser(<%= user.id %>);"
-                                   class="bi bi-trash text-danger"></i>
-                            </td>
-                        </tr>
-                    <% }) %>
-                <% } %>
-                </tbody>
-                <script>
-                    deleteUser = function (id) {
-                        fetch('/admin/users/' + id, {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                            })
-                            .catch((error) => {
-                                console.error('Error:', error);
-                            }).finally(() => {
-                            window.location.href = '/admin/users';
-                        });
-                    }
-                </script>
-            </table>
-        </div>
+  </div>
+  <div class="card">
+    <div class="table-responsive text-nowrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Firstname</th>
+            <th>Lastname</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Is Admin</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+          <% if(users.length > 0) { %> <% users.forEach(function(user){ %>
+          <tr>
+            <td><%= user.id %></td>
+            <td><%= user.first_name %></td>
+            <td><%= user.last_name %></td>
+            <td><%= user.username %></td>
+            <td><%= user.email %></td>
+            <td><%= user.is_admin %></td>
+            <td>
+              <a href="/admin/users/edit/<%= user.id %>"
+                ><i class="bi bi-pencil-square"></i
+              ></a>
+              <i
+                onclick="if(confirm('Are you sure?')) deleteUser(<%= user.id %>);"
+                class="bi bi-trash text-danger"
+              ></i>
+            </td>
+          </tr>
+          <% }) %> <% } %>
+        </tbody>
+        <script>
+          deleteUser = function (id) {
+            fetch("/admin/users/" + id, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {})
+              .catch((error) => {
+                console.error("Error:", error);
+              })
+              .finally(() => {
+                window.location.href = "/admin/users";
+              });
+          };
+        </script>
+      </table>
     </div>
+  </div>
 </div>
 <%- include('../../layouts/admin/footer') %>

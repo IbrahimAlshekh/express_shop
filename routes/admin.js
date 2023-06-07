@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { UsersController, ProductsController} = require('../controllers');
+const { UsersController, ProductsController, OrdersController} = require('../controllers');
 
 router.get('/', function(req, res, next) {
     res.render('admin/index', { title: 'dashboard' });
 });
 
-router.get('/orders', function(req, res, next) {
-    res.render('admin/orders', { title: 'orders' });
-});
+// orders routes
+router.get('/orders', OrdersController.index);
+router.get('/orders/:id', OrdersController.show);
+router.post('/orders/:id', OrdersController.updateOrderStatus);
 
 // products routes
 router.post('/products', ProductsController.store);
