@@ -24,9 +24,6 @@ class ProductModel {
       if (err) {
         console.log(__filename + ":" + err);
       }
-      if (close) {
-        this.close();
-      }
     });
   }
 
@@ -131,7 +128,6 @@ class ProductModel {
     try {
       const product = await this.getProductById(id);
       product.gallery = await this.getProductImages(id);
-      this.close();
       return product;
     } catch (err) {
       console.error(__filename + ": " + err);

@@ -6,5 +6,7 @@ const { UsersController } = require("../controllers");
 router.post("/edit", UsersController.store);
 router.get("/:id/edit", UsersController.editProfile);
 router.get("/:id/profile", UsersController.showProfile);
+router.get("/:id/cart", UsersController.showCart);
+router.get("/:id/checkout", UsersController.checkout);
 
 module.exports = router;

@@ -1,10 +1,10 @@
-const { UserModel } = require("../models");
+const { UserModel, ProductModel } = require("../models");
 const { deleteImage, storeImage } = require("../lib/utils");
 const AuthController = require("./AuthController");
 
 class UsersController {
   static async index(req, res, next) {
-    if(!AuthController.isLoggedIn(req, res, next)) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
       return;
     }
     const user = new UserModel();
@@ -15,28 +15,76 @@ class UsersController {
   }
 
   static async showProfile(req, res, next) {
-    if(!AuthController.isLoggedIn(req, res, next)) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
       return;
     }
-    const user = new UserModel();
-    const userData = await user.get(req.params.id);
-    user.close();
     res.render("users/profile", {
       title: "users",
-      user: userData,
+      user: req.session.user,
     });
   }
 
-  static async editProfile(req, res, next) {
-    if(!AuthController.isLoggedIn(req, res, next)) {
+  static async showCart(req, res, next) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
       return;
     }
-    const user = new UserModel();
-    const userData = await user.get(req.params.id);
-    user.close();
+
+    if (req.session.user.cart?.items) {
+      const productModel = new ProductModel();
+      const cartItems =req.session.user.cart.items;
+
+      for (const item of cartItems) {
+        item.product = await productModel.get(item.product_id);
+      }
+
+      req.session.user.cart.items = cartItems;
+      productModel.close();
+    }
+
+    res.render("cart/cart", {
+      title: "users",
+      user: req.session.user,
+      total: req.session.user.cart?.items.reduce((acc, item) => {
+        return acc +(item.price * item.quantity);
+      } , 0).toFixed(2),
+    });
+  }
+
+  static async checkout(req, res, next) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
+
+    if (req.session.user.cart?.items) {
+      const productModel = new ProductModel();
+      const cartItems =req.session.user.cart.items;
+
+      for (const item of cartItems) {
+        item.product = await productModel.get(item.product_id);
+      }
+
+      req.session.user.cart.items = cartItems;
+      productModel.close();
+    }
+
+    res.render("cart/CheckOut", {
+      title: "users",
+      user: req.session.user,
+      total: req.session.user.cart?.items.reduce((acc, item) => {
+        return acc +(item.price * item.quantity);
+      } , 0).toFixed(2),
+    });
+
+  }
+
+
+  static async editProfile(req, res, next) {
+    if (!AuthController.isLoggedIn(req, res, next)) {
+      return;
+    }
     res.render("users/editprofile", {
       title: "users",
-      user: userData,
+      user: req.session.user,
     });
   }
 
@@ -54,8 +102,16 @@ class UsersController {
 
   static async store(req, res, next) {
     try {
-      const {action,user_id, first_name, last_name, username, email, password, is_admin } =
-        req.body;
+      const {
+        action,
+        user_id,
+        first_name,
+        last_name,
+        username,
+        email,
+        password,
+        is_admin,
+      } = req.body;
       const profileImage = req?.files?.profile_image;
       let profileImageName = await storeImage(
         profileImage,
@@ -79,11 +135,10 @@ class UsersController {
         await user.update(req.body.id, userData);
       }
 
-      if(action === "edit") {
-
-      res.redirect("/admin/users");
-      } else if(action === "edit_profile") {
-        res.redirect("/users/" + req.body.user_id + "/profile");
+      if (action === "edit") {
+        res.redirect("/admin/users");
+      } else if (action === "edit_profile") {
+        res.redirect("/users/" + user_id + "/profile");
       }
     } catch (err) {
       console.log(__filename + ":" + err);
