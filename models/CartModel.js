@@ -236,12 +236,14 @@ class CartModel {
     }
   }
 
-  async updateCartItem(cartItem) {
+  async updateCartItem(cartItem,incrementQuantity = true) {
     this.open();
     try {
+      
+      const quantity = incrementQuantity ? '(quantity + ?)' : '?';
       const updateStmt = this.db.prepare(`
         UPDATE cart_items 
-        SET quantity = (quantity + ?)
+        SET quantity = ${quantity}
         WHERE cart_id = ? AND product_id = ?
       `);
 

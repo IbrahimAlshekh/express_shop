@@ -26,9 +26,6 @@ class UserModel {
       if (err) {
         console.log(__filename + ":" + err);
       }
-      if (close) {
-        this.close();
-      }
     });
   }
 

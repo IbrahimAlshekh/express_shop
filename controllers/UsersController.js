@@ -24,60 +24,6 @@ class UsersController {
     });
   }
 
-  static async showCart(req, res, next) {
-    if (!AuthController.isLoggedIn(req, res, next)) {
-      return;
-    }
-
-    if (req.session.user.cart?.items) {
-      const productModel = new ProductModel();
-      const cartItems =req.session.user.cart.items;
-
-      for (const item of cartItems) {
-        item.product = await productModel.get(item.product_id);
-      }
-
-      req.session.user.cart.items = cartItems;
-      productModel.close();
-    }
-
-    res.render("cart/cart", {
-      title: "users",
-      user: req.session.user,
-      total: req.session.user.cart?.items.reduce((acc, item) => {
-        return acc +(item.price * item.quantity);
-      } , 0).toFixed(2),
-    });
-  }
-
-  static async checkout(req, res, next) {
-    if (!AuthController.isLoggedIn(req, res, next)) {
-      return;
-    }
-
-    if (req.session.user.cart?.items) {
-      const productModel = new ProductModel();
-      const cartItems =req.session.user.cart.items;
-
-      for (const item of cartItems) {
-        item.product = await productModel.get(item.product_id);
-      }
-
-      req.session.user.cart.items = cartItems;
-      productModel.close();
-    }
-
-    res.render("cart/CheckOut", {
-      title: "users",
-      user: req.session.user,
-      total: req.session.user.cart?.items.reduce((acc, item) => {
-        return acc +(item.price * item.quantity);
-      } , 0).toFixed(2),
-    });
-
-  }
-
-
   static async editProfile(req, res, next) {
     if (!AuthController.isLoggedIn(req, res, next)) {
       return;

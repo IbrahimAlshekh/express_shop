@@ -28,48 +28,6 @@ class ProductController {
     });
   }
 
-  static async addToCart(req, res, next) {
-    if (!AuthController.isLoggedIn(req, res, next)) {
-      return;
-    }
-
-    const { source, product_id, quantity } = req.body;
-
-    try {
-      const product = await new ProductModel().get(product_id);
-
-      const cartModel = new CartModel();
-      let cartId = req.session.user.cart?.id;
-      if (!cartId) {
-        cartId = await cartModel.create(req.session.user.id);
-      }
-
-      const cartItem = {
-        cart_id: cartId,
-        product_id: product.id,
-        price: product.price,
-        quantity: quantity,
-      };
-
-      await cartModel.addItem(cartId, cartItem);
-
-      req.session.user.cart = await cartModel.get(cartId);
-
-      cartModel.close();
-
-      if (source === "product") {
-        res.redirect(`/products/${product_id}`);
-      } else if (source === "products") {
-        res.redirect("/products");
-      } else {
-        res.redirect("/");
-      }
-    } catch (err) {
-      console.log(err);
-      res.redirect("/");
-    }
-  }
-
   static async edit(req, res, next) {
     const product = new ProductModel();
     res.render("admin/products/edit", {

@@ -1,5 +1,5 @@
 <%- include('../layouts/main/header', {title: 'Cart'}) %>
-<div class="row border-bottom border-secondary">
+<div class="p-2 border-bottom border-secondary">
   <h3>Your Cart</h3>
 </div>
 <% if (user.cart.items.length > 0) { %>
@@ -10,6 +10,7 @@
       <th scope="col">Product Name</th>
       <th scope="col">Quantity</th>
       <th scope="col">Total</th>
+      <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
@@ -17,8 +18,48 @@
     <tr>
       <td><%= item.product.id %></td>
       <td><%= item.product.name %></td>
-      <td><%= item.quantity %></td>
+      <td>
+        <form id="update_form_<%= item.product_id %>" method="post" action="/users/<%= user.id %>/cart">
+          <input
+            type="hidden"
+            name="product_id"
+            value="<%= item.product_id %>"
+          />
+          <input type="hidden" name="cart_id" value="<%= user.cart.id %>" />
+          <input type="hidden" name="action" value="update" />
+          <input
+            type="number"
+            name="quantity"
+            value="<%= item.quantity %>"
+            onchange="document.getElementById('refresher_<%= item.product_id %>').classList.remove('d-none')"
+            onkeyup="document.getElementById('refresher_<%= item.product_id %>').classList.remove('d-none')"
+            min="1"
+            max="100"
+          />
+          <span>
+            <i id="refresher_<%= item.product_id %>" class="bi bi-arrow-repeat fs-5 text-primary d-none" 
+              onclick="document.getElementById('update_form_<%= item.product_id %>').submit()"
+              style="cursor: pointer;"
+              ></i>
+          </span>
+        </form>
+      </td>
       <td><%= item.price %>$</td>
+      <td>
+        <form id="delete_form_<%= item.product_id %>" method="post" action="/users/<%= user.id %>/cart">
+          <input type="hidden" name="cart_id" value="<%= user.cart.id %>" />
+          <input type="hidden" name="action" value="delete" />
+          <input
+            type="hidden"
+            name="product_id"
+            value="<%= item.product_id %>"
+          />
+          <i class="bi bi-trash text-danger" 
+          onclick="if(confirm('Are you sure?')) document.getElementById('delete_form_<%= item.product_id %>').submit()"
+          style="cursor: pointer;"
+          ></i>
+        </form>
+      </td>
     </tr>
     <% }); %>
     <tr class="border-bottom border-secondary"></tr>
@@ -27,11 +68,16 @@
       <td></td>
       <td></td>
       <td><%= total %>$</td>
+      <td></td>
     </tr>
   </tbody>
 </table>
 <div class="d-flex justify-content-center w-100">
-  <a class="btn btn-primary d-flex justify-content-center m-4 p-2 w-75" href="checkout">CheckOut</a>
+  <a
+    class="btn btn-primary d-flex justify-content-center m-4 p-2 w-75"
+    href="checkout"
+    >CheckOut</a
+  >
 </div>
 <% } else { %>
 <div class="alert alert-info py-4 my-4" role="alert">

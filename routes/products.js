@@ -1,9 +1,9 @@
 const express = require("express");
-const { ProductsController } = require("../controllers");
+const { ProductsController,OrdersController } = require("../controllers");
 const router = express.Router();
 
 /* GET users listing. */
-router.post("/add-to-cart", ProductsController.addToCart);
+router.post("/add-to-cart", OrdersController.addToCart);
 router.get("/:id", ProductsController.show);
 router.get("/", ProductsController.indexCards);
 
