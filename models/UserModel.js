@@ -218,7 +218,7 @@ class UserModel {
       `);
       stmt.run(id);
 
-      this.finalize(statement);
+      this.finalize(stmt);
     } catch (err) {
       console.log(__filename + ":" + err);
       throw err;
