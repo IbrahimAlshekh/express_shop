@@ -56,6 +56,7 @@ class ProductController {
       req.session.user.cart = await cartModel.get(cartId);
 
       cartModel.close();
+
       if (source === "product") {
         res.redirect(`/products/${product_id}`);
       } else if (source === "products") {
