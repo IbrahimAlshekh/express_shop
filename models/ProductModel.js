@@ -10,7 +10,7 @@ class ProductModel {
   }
 
   close() {
-    this.db.close((err) => {
+    this.db.close(function(err){
       if (err) {
         console.log(__filename + ":" + err);
       } else {
@@ -20,7 +20,7 @@ class ProductModel {
   }
 
   finalize(stmt, close = true) {
-    stmt.finalize((err) => {
+    stmt.finalize(function(err){
       if (err) {
         console.log(__filename + ":" + err);
       }
@@ -40,7 +40,7 @@ class ProductModel {
         );
       `);
 
-      productsTableStatement.run((err) => {
+      productsTableStatement.run(function(err){
         if (err) {
           console.log(__filename + ":" + err);
         } else {
@@ -58,7 +58,7 @@ class ProductModel {
           FOREIGN KEY ("product_id") REFERENCES products ("id")
         );
       `);
-      productImagesTableStatement.run((err) => {
+      productImagesTableStatement.run(function(err){
         if (err) {
           console.log(__filename + ":" + err);
         } else {
@@ -75,7 +75,7 @@ class ProductModel {
       const stmt = this.db.prepare(`SELECT *
       FROM products`);
       const rows = await new Promise((resolve, reject) => {
-        stmt.all((err, rows) => {
+        stmt.all(function(err, rows){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -108,7 +108,7 @@ class ProductModel {
         WHERE product_id = ?
       `);
       const gallery = await new Promise((resolve, reject) => {
-        stmt.all(productId, (err, rows) => {
+        stmt.all(productId, function(err, rows){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -144,7 +144,7 @@ class ProductModel {
         WHERE id = ?
       `);
       const product = await new Promise((resolve, reject) => {
-        stmt.get(id, (err, row) => {
+        stmt.get(id, function(err, row){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -173,7 +173,7 @@ class ProductModel {
           product.description,
           product.price,
           product.thumbnail,
-          (err) => {
+          function(err){
             if (err) {
               reject(__filename + ":" + err);
             }
@@ -200,7 +200,7 @@ class ProductModel {
       `);
 
       const id = await new Promise((resolve, reject) => {
-        insertStmt.run(image, product_id, (err) => {
+        insertStmt.run(image, product_id, function(err){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -236,7 +236,7 @@ class ProductModel {
           product.price,
           product.thumbnail,
           productId,
-          (err) => {
+          function(err){
             if (err) {
               reject(__filename + ":" + err);
             }
@@ -296,7 +296,7 @@ class ProductModel {
         WHERE name LIKE ?
       `);
       const rows = await new Promise((resolve, reject) => {
-        stmt.all(`%${query}%`, (err, rows) => {
+        stmt.all(`%${query}%`, function(err, rows){
           if (err) {
             reject(__filename + ":" + err);
           }

@@ -12,7 +12,7 @@ class UserModel {
   }
 
   close() {
-    this.db.close((err) => {
+    this.db.close(function(err){
       if (err) {
         console.log(__filename + ":" + err);
       } else {
@@ -22,7 +22,7 @@ class UserModel {
   }
 
   finalize(stmt, close = true) {
-    stmt.finalize((err) => {
+    stmt.finalize(function(err){
       if (err) {
         console.log(__filename + ":" + err);
       }
@@ -43,7 +43,7 @@ class UserModel {
                 "is_admin"      boolean
             );
         `);
-    usesTableStatement.run((err) => {
+    usesTableStatement.run(function(err){
       if (err) {
         console.log(__filename + ":" + err);
       } else {
@@ -58,7 +58,7 @@ class UserModel {
     try {
       const stmt = this.db.prepare(`SELECT * FROM users`);
       const users = await new Promise((resolve, reject) => {
-        stmt.all((err, rows) => {
+        stmt.all(function(err, rows){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -80,7 +80,7 @@ class UserModel {
     try {
       const stmt = this.db.prepare(`SELECT * FROM users WHERE id = ?`);
       const user = await new Promise((resolve, reject) => {
-        stmt.get(id, (err, row) => {
+        stmt.get(id, function(err, row){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -111,7 +111,7 @@ class UserModel {
           username ?? null,
           username ?? null,
           getPasswordHash(password),
-          (err, row) => {
+          function(err, row){
             if (err) {
               reject(__filename + ":" + err);
             }
@@ -146,7 +146,7 @@ class UserModel {
           getPasswordHash(user.password),
           user.profile_image ?? null,
           user.is_admin ?? 0,
-          (err) => {
+          function(err){
             if (err) {
               reject(__filename + ":" + err);
             }
@@ -191,7 +191,7 @@ class UserModel {
           userData.profile_image,
           userData.is_admin,
           userId,
-          (err) => {
+          function(err){
             if (err) {
               reject(__filename + ":" + err);
             }

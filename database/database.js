@@ -2,7 +2,7 @@ const sqlite3 = require("sqlite3").verbose();
 const Models = require("../models");
 
 const db = (model = "Unknown") => {
-  return new sqlite3.Database("./db.sqlite3", (err) => {
+  return new sqlite3.Database("./db.sqlite3", function(err){
     if (err) {
       console.log(model + ": Error connecting to the database.");
     }

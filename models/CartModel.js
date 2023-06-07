@@ -13,7 +13,7 @@ class CartModel {
   }
 
   close() {
-    this.db.close((err) => {
+    this.db.close(function(err){
       if (err) {
         console.log(__filename + ":" + err);
       } else {
@@ -23,7 +23,7 @@ class CartModel {
   }
 
   finalize(stmt, close = true) {
-    stmt.finalize((err) => {
+    stmt.finalize(function(err){
       if (err) {
         console.log(__filename + ":" + err);
       }
@@ -40,7 +40,7 @@ class CartModel {
                 FOREIGN KEY ("user_id") REFERENCES users ("id")
             );
         `);
-      cartsTableStatement.run((err) => {
+      cartsTableStatement.run(function(err){
         if (err) {
           console.log(__filename + ":" + err);
         } else {
@@ -62,7 +62,7 @@ class CartModel {
                 FOREIGN KEY ("cart_id") REFERENCES carts ("id")
             );
         `);
-      cartItemsTableSql.run((err) => {
+      cartItemsTableSql.run(function(err){
         if (err) {
           console.log(__filename + ":" + err);
         } else {
@@ -83,7 +83,7 @@ class CartModel {
         WHERE id = ?
       `);
       const cart = await new Promise((resolve, reject) => {
-        statement.get(id, (err, row) => {
+        statement.get(id, function(err, row){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -114,7 +114,7 @@ class CartModel {
         WHERE user_id = ?
       `);
       const cart = await new Promise((resolve, reject) => {
-        statement.get(userId, (err, row) => {
+        statement.get(userId, function(err, row){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -144,7 +144,7 @@ class CartModel {
         WHERE cart_id = ?
       `);
       const cartItems = await new Promise((resolve, reject) => {
-        cartItemsStatement.all(cart_id, (err, row) => {
+        cartItemsStatement.all(cart_id, function(err, row){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -168,7 +168,7 @@ class CartModel {
         `);
 
       const id = await new Promise((resolve, reject) => {
-        insertStmt.run(userId, (err) => {
+        insertStmt.run(userId, function(err){
           if (err) {
             reject(__filename + ":" + err);
           }
@@ -218,7 +218,7 @@ class CartModel {
           cartItem.product_id,
           cartItem.price,
           cartItem.quantity,
-          (err) => {
+          function(err){
             if (err) {
               reject(__filename + ":" + err);
             }
@@ -252,7 +252,7 @@ class CartModel {
           cartItem.quantity,
           cartItem.cart_id,
           cartItem.product_id,
-          (err) => {
+          function(err){
             if (err) {
               reject(__filename + ":" + err);
             }
