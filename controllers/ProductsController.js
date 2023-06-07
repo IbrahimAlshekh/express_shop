@@ -43,13 +43,18 @@ class ProductController {
       if (!cartId) {
         cartId = await cartModel.create(req.session.user.id);
       }
-      await cartModel.createCartItem(
-        cartId,
-        product.id,
-        product.price,
-        quantity
-      );
-      // req.session.user.cart = await cartModel.get(cartId);
+
+      const cartItem = {
+        cart_id: cartId,
+        product_id: product.id,
+        price: product.price,
+        quantity: quantity,
+      };
+
+      await cartModel.addItem(cartId, cartItem);
+
+      req.session.user.cart = await cartModel.get(cartId);
+
       if (source === "product") {
         res.redirect(`/products/${product_id}`);
       } else if (source === "products") {

@@ -37,7 +37,7 @@ app.use(function (req, res, next) {
     error: null,
     success: null,
     siteTitle: "Express Shop",
-    cart_count: 5,
+    cart_count: req.session?.user?.cart?.items?.length || 0,
     base_dir: __dirname,
     image_dir: __dirname + "/public/images/",
     user: req.session?.user,

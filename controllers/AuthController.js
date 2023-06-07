@@ -12,7 +12,7 @@ class AuthController {
       req.body.password
     );
     if (user) {
-      user.cart = await new CartModel().get(user.id);
+      user.cart = await new CartModel().getByUserId(user.id);
       req.session.user = user;
       res.redirect("/");
     } else {
