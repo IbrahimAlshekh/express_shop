@@ -2,9 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { UsersController, ProductsController, OrdersController} = require('../controllers');
 
-router.get('/', function(req, res, next) {
-    res.render('admin/index', { title: 'dashboard' });
-});
+router.get('/',OrdersController.index);
 
 // orders routes
 router.get('/orders', OrdersController.index);
