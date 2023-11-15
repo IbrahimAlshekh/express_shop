@@ -1,5 +1,5 @@
 # express_shop
-a demo nodejs-express project for Najla
+a demo nodejs-express project for Najla S
 
 ## Installation
 
